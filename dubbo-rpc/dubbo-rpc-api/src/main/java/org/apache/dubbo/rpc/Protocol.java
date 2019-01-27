@@ -28,12 +28,14 @@ public interface Protocol {
 
     /**
      * Get default port when user doesn't config the port.
+     *  获取默认端口，当用户没有配置时
      *
      * @return default port
      */
     int getDefaultPort();
 
     /**
+     * 暴露远程服务 -- 服务provider
      * Export service for remote invocation: <br>
      * 1. Protocol should record request source address after receive a request:
      * RpcContext.getContext().setRemoteAddress();<br>
@@ -50,6 +52,7 @@ public interface Protocol {
     <T> Exporter<T> export(Invoker<T> invoker) throws RpcException;
 
     /**
+     * 引用远程服务 - Consumer
      * Refer a remote service: <br>
      * 1. When user calls `invoke()` method of `Invoker` object which's returned from `refer()` call, the protocol
      * needs to correspondingly execute `invoke()` method of `Invoker` object <br>
@@ -68,6 +71,7 @@ public interface Protocol {
     <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException;
 
     /**
+     * 释放协议
      * Destroy protocol: <br>
      * 1. Cancel all services this protocol exports and refers <br>
      * 2. Release all occupied resources, for example: connection, port, etc. <br>
