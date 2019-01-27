@@ -67,6 +67,8 @@ import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 
 
 /**
+ *
+ * 注册目录
  * RegistryDirectory
  */
 public class RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener {

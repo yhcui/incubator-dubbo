@@ -79,8 +79,13 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
     @Override
     public Registry createRegistry(URL url) {
         url = getRegistryURL(url);
+
+
+
         List<URL> urls = new ArrayList<URL>();
         urls.add(url.removeParameter(Constants.BACKUP_KEY));
+
+        // 获取备份的注册中心地址，并加到注册中心列表中
         String backup = url.getParameter(Constants.BACKUP_KEY);
         if (backup != null && backup.length() > 0) {
             String[] addresses = Constants.COMMA_SPLIT_PATTERN.split(backup);
@@ -88,7 +93,10 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
                 urls.add(url.setAddress(address));
             }
         }
+
         RegistryDirectory<RegistryService> directory = new RegistryDirectory<RegistryService>(RegistryService.class, url.addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(Constants.REFER_KEY, url.toParameterString()));
+
+        // 利用cluster的join方法，将directory的多个invoker对象封装成一个Invoker对象,默认cluster为FailoverClusterInvoker
         Invoker<RegistryService> registryInvoker = cluster.join(directory);
         RegistryService registryService = proxyFactory.getProxy(registryInvoker);
         DubboRegistry registry = new DubboRegistry(registryInvoker, registryService);

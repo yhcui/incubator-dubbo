@@ -29,6 +29,8 @@ import org.apache.dubbo.common.extension.SPI;
 public interface RegistryFactory {
 
     /**
+     * 连接注册中心
+     *
      * Connect to the registry
      * <p>
      * Connecting the registry needs to support the contract: <br>
