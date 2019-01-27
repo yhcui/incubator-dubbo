@@ -268,7 +268,7 @@ public class DubboProtocol extends AbstractProtocol {
         openServer(url);
         optimizeSerialization(url);
         return exporter;
-    }
+    }a
 
     private void openServer(URL url) {
         // find server.

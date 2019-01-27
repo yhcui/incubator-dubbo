@@ -76,16 +76,20 @@ public class ExtensionLoader<T> {
 
     // ==============================
 
+    /** 接口class 该接口不一定必须添加@SPI注解，标明这是一个service provider interface */
     private final Class<?> type;
 
     private final ExtensionFactory objectFactory;
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<Class<?>, String>();
 
+    /** 存放类名及类型 */
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<Map<String, Class<?>>>();
 
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<String, Object>();
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
+
+    /**  如果没有，通过生成类文件进行compile、加载存入*/
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
@@ -97,6 +101,7 @@ public class ExtensionLoader<T> {
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
+        // 这个地方会是一个死循环，但因为Adaptive注解的存在，避免了死循环
         objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
 
@@ -104,6 +109,15 @@ public class ExtensionLoader<T> {
         return type.isAnnotationPresent(SPI.class);
     }
 
+    /**
+     * 根据类名获取ExtensionLoader
+     * 低层存储结构使用ConcurrentHashMap, key为Class,Value为new ExtensionLoader
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (type == null) {
@@ -320,6 +334,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
+     * 获取指定名字的扩展，如果不存抛出异常
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
      */
@@ -600,6 +615,14 @@ public class ExtensionLoader<T> {
         return classes;
     }
 
+    /**
+     * 加载接口类型为type的所有的ExtensionClass类,即加载type接口中包括@SPI注解接口的子类
+     * 即加载所有 META-INF/dubbo/ 和META-INF/service/下配置文件的类
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     // synchronized in getExtensionClasses
     private Map<String, Class<?>> loadExtensionClasses() {
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
@@ -781,6 +804,13 @@ public class ExtensionLoader<T> {
         return cachedAdaptiveClass = createAdaptiveExtensionClass();
     }
 
+    /**
+     * 创建AdaptvieExtension的class内容，并进行编译加载
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     private Class<?> createAdaptiveExtensionClass() {
         String code = createAdaptiveExtensionClassCode();
         ClassLoader classLoader = findClassLoader();
@@ -788,6 +818,13 @@ public class ExtensionLoader<T> {
         return compiler.compile(code, classLoader);
     }
 
+    /**
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     private String createAdaptiveExtensionClassCode() {
         StringBuilder codeBuilder = new StringBuilder();
         Method[] methods = type.getMethods();

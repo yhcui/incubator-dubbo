@@ -26,7 +26,9 @@ import java.lang.annotation.Target;
 
 /**
  * Provide helpful information for {@link ExtensionLoader} to inject dependency extension instance.
- *
+ * ElementType.TYPE : 代表该注解可以用到类或接口上
+ * ElementType.METHOD : 代表该注解可以用到方法上
+ * 该注解作用：加了该注解，代表不使用Compiler编译生成
  * @see ExtensionLoader
  * @see URL
  */
