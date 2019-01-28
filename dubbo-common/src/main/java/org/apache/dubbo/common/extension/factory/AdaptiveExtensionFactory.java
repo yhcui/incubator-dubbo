@@ -27,6 +27,7 @@ import java.util.List;
 /**
  * AdaptiveExtensionFactory
  * 通过Adaptive获取了spi与spring extension factory
+ * 如果所有实现中没有被@Adaptive注释的，那么dubbo会动态生成一个自适应实现类
  */
 @Adaptive
 public class AdaptiveExtensionFactory implements ExtensionFactory {

@@ -46,6 +46,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 /**
+ * 每一个ExtensionLoader实例仅负责加载特定SPI扩展的实现*
+ * 因此想要获取某个扩展的实现，首先要获取到该扩展对应的ExtensionLoader实例
+ * ExtensionLoader 注入的依赖扩展点是一个 Adaptive 实例，直到扩展点方法执行时才决定调用是一个扩展点实现
+ * `
  * Load dubbo extensions
  * <ul>
  * <li>auto inject dependency extension </li>
@@ -91,6 +95,8 @@ public class ExtensionLoader<T> {
 
     /**  如果没有，通过生成类文件进行compile、加载存入*/
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
+
+    /** 缓存标记有 @Adaptive */
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
@@ -105,12 +111,19 @@ public class ExtensionLoader<T> {
         objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
 
+    /**
+     * 判断type中是否包括了SPI注解
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     private static <T> boolean withExtensionAnnotation(Class<T> type) {
         return type.isAnnotationPresent(SPI.class);
     }
 
     /**
-     * 根据类名获取ExtensionLoader
+     * 根据类名获取 对应的ExtensionLoader
      * 低层存储结构使用ConcurrentHashMap, key为Class,Value为new ExtensionLoader
      *
      * @author cuiyuhui
@@ -126,6 +139,7 @@ public class ExtensionLoader<T> {
         if (!type.isInterface()) {
             throw new IllegalArgumentException("Extension type(" + type + ") is not interface!");
         }
+        // 只接受使用@SPI注解注释的接口类型
         if (!withExtensionAnnotation(type)) {
             throw new IllegalArgumentException("Extension type(" + type +
                     ") is not extension, because WITHOUT @" + SPI.class.getSimpleName() + " Annotation!");
@@ -205,6 +219,8 @@ public class ExtensionLoader<T> {
     }
 
     /**
+     * 根据条件获取当前扩展可自动激活的实现
+     *
      * Get activate extensions.
      *
      * @param url    url
@@ -390,7 +406,10 @@ public class ExtensionLoader<T> {
     }
 
     /**
+     * 获取扩展点名称
+     *
      * Return default extension name, return <code>null</code> if not configured.
+     *
      */
     public String getDefaultExtensionName() {
         getExtensionClasses();
@@ -479,6 +498,15 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     *
+     * 获取当前扩展的自适应实现
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
         Object instance = cachedAdaptiveInstance.get();
@@ -555,6 +583,14 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 为扩展注入依赖的其他扩展实现
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     private T injectExtension(T instance) {
         try {
             if (objectFactory != null) {
@@ -601,6 +637,14 @@ public class ExtensionLoader<T> {
         return getExtensionClasses().get(name);
     }
 
+    /**
+     * 获取已经存在的扩展实现类,不存在创建
+     *
+     * @author cuiyuhui
+     * @created  
+     * @param
+     * @return 
+     */
     private Map<String, Class<?>> getExtensionClasses() {
         Map<String, Class<?>> classes = cachedClasses.get();
         if (classes == null) {
@@ -805,7 +849,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 创建AdaptvieExtension的class内容，并进行编译加载
+     * 创建AdaptiveExtension的class内容，并进行编译加载
      * @author cuiyuhui
      * @created
      * @param
@@ -819,7 +863,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     *
+     * 创建自适应扩展点代码
      * @author cuiyuhui
      * @created
      * @param

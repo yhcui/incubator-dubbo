@@ -66,6 +66,8 @@ import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 
 /**
+ * 服务提供者暴露服务配置
+ *
  * ServiceConfig
  *
  * @export

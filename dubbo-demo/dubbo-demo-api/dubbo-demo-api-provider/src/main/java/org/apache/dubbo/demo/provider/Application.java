@@ -35,6 +35,7 @@ public class Application {
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
         service.export();
+        System.out.println("start ---------------");
         System.in.read();
     }
 }

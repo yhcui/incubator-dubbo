@@ -165,6 +165,7 @@ public final class Version {
         }
     }
 
+    /** 验证是否有重复的类 cls*/
     public static void checkDuplicate(Class<?> cls, boolean failOnError) {
         checkDuplicate(cls.getName().replace('.', '/') + ".class", failOnError);
     }
