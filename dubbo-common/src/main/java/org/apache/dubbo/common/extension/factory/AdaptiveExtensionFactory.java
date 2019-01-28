@@ -26,6 +26,7 @@ import java.util.List;
 
 /**
  * AdaptiveExtensionFactory
+ * 通过Adaptive获取了spi与spring extension factory
  */
 @Adaptive
 public class AdaptiveExtensionFactory implements ExtensionFactory {

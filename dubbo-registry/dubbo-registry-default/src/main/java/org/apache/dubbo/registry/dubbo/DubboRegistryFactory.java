@@ -98,6 +98,8 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
 
         // 利用cluster的join方法，将directory的多个invoker对象封装成一个Invoker对象,默认cluster为FailoverClusterInvoker
         Invoker<RegistryService> registryInvoker = cluster.join(directory);
+
+        // 获取Invoker的代理对象
         RegistryService registryService = proxyFactory.getProxy(registryInvoker);
         DubboRegistry registry = new DubboRegistry(registryInvoker, registryService);
         directory.setRegistry(registry);

@@ -87,6 +87,8 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
+
+        // 活跃服务提供者集合
         ConcurrentMap<String, WeightedRoundRobin> map = methodWeightMap.get(key);
         if (map == null) {
             methodWeightMap.putIfAbsent(key, new ConcurrentHashMap<String, WeightedRoundRobin>());
@@ -97,6 +99,9 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         long now = System.currentTimeMillis();
         Invoker<T> selectedInvoker = null;
         WeightedRoundRobin selectedWRR = null;
+
+
+        // 找出活跃的权重最大的服务提供者为目标服务提供者
         for (Invoker<T> invoker : invokers) {
             String identifyString = invoker.getUrl().toIdentityString();
             WeightedRoundRobin weightedRoundRobin = map.get(identifyString);
@@ -111,15 +116,21 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
                 //weight changed
                 weightedRoundRobin.setWeight(weight);
             }
+
+            // 每轮询一次，服务提供者的当前权重增长给定步长
             long cur = weightedRoundRobin.increaseCurrent();
             weightedRoundRobin.setLastUpdate(now);
+
+            // 当前服务提供者权重大于最大权重，最大权重修改为当前服务提供者权重，目标服务提供者设置为当前服务提供者
             if (cur > maxCurrent) {
                 maxCurrent = cur;
                 selectedInvoker = invoker;
                 selectedWRR = weightedRoundRobin;
             }
+            // 用于重新目标服务提供者权重
             totalWeight += weight;
         }
+        // 回收活跃的服务提供者
         if (!updateLock.get() && invokers.size() != map.size()) {
             if (updateLock.compareAndSet(false, true)) {
                 try {
@@ -139,10 +150,13 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
                 }
             }
         }
+
+        // 目标服务提供者不为空，则将目标服务提供者权重设置为最低：current.addAndGet(-1 * total)
         if (selectedInvoker != null) {
             selectedWRR.sel(totalWeight);
             return selectedInvoker;
         }
+        // 返回第一个为目标服务提供者
         // should not happen here
         return invokers.get(0);
     }
