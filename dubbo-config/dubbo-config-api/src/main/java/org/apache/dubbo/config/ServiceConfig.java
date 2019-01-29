@@ -327,8 +327,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
     
     /**
-     * 1、将服务export到本地（根据scope的配置）
-     * 2、
+     * 导出服务逻辑
+     * 整个逻辑大致可分为三个部分：
+     * 第一部分是前置工作，主要用于检查参数，组装 URL
+     * 第二部分是导出服务，包含导出服务到本地 (JVM)，和导出服务到远程两个过程
+     *      将服务export到本地（根据scope的配置）
+     * 第三部分是向注册中心注册服务，用于服务发现
      * @author cuiyuhui
      * @created  
      * @param
@@ -368,6 +372,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
+        /**
+         * ProviderModel 表示服务提供者模型，此对象中存储了与服务提供者相关的信息。
+         * 比如服务的配置信息，服务实例等。每个被导出的服务对应一个 ProviderModel
+         * ApplicationModel 持有所有的 ProviderModel
+         * */
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), ref, interfaceClass);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
         doExportUrls();
@@ -439,6 +448,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         appendParameters(map, provider, Constants.DEFAULT_KEY);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
+        /** 遍历dubbo:service下的dubbo:method及dubbo:argument添加URL的parameter */
         if (methods != null && !methods.isEmpty()) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
@@ -451,6 +461,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
                 List<ArgumentConfig> arguments = method.getArguments();
                 if (arguments != null && !arguments.isEmpty()) {
+                    /** 获取 ArgumentConfig 列表 */
                     for (ArgumentConfig argument : arguments) {
                         // convert argument type
                         if (argument.getType() != null && argument.getType().length() > 0) {
@@ -523,6 +534,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(Constants.TOKEN_KEY, token);
             }
         }
+
+        /** 是否是injvm的调用，如果是，则不需要注册到注册中心 */
         if (Constants.LOCAL_PROTOCOL.equals(protocolConfig.getName())) {
             protocolConfig.setRegister(false);
             map.put("notify", "false");
@@ -579,10 +592,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (StringUtils.isNotEmpty(proxy)) {
                             registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
                         }
-
+                        /** 以registryUrl创建Invoker */
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                        /** 包装Invoker和ServiceConfig */
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
+                        /** 以RegistryProtocol为主，注册和订阅注册中心，并暴露本地服务端口 */
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }

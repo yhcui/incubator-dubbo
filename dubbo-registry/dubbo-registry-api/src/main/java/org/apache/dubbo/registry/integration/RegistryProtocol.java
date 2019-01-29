@@ -162,8 +162,18 @@ public class RegistryProtocol implements Protocol {
         registry.unregister(registeredProviderUrl);
     }
 
+    /**
+     *
+     * 把provider的信息注册到registry，并且订阅configurators
+     *
+     * @author cuiyuhui
+     * @created  
+     * @param 
+     * @return 
+     */
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
+
         URL registryUrl = getRegistryUrl(originInvoker);
         // url to export locally
         URL providerUrl = getProviderUrl(originInvoker);
@@ -177,18 +187,23 @@ public class RegistryProtocol implements Protocol {
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
-        //export invoker
+
+        //export invoker - 发布本地invoker，暴露本地服务，打开服务器端口
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getRegisteredProviderUrl(providerUrl, registryUrl);
+
         ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker,
                 registryUrl, registeredProviderUrl);
         //to judge if we need to delay publish
         boolean register = registeredProviderUrl.getParameter("register", true);
         if (register) {
+            // 向注册中心注册providerUrl
             register(registryUrl, registeredProviderUrl);
+
+            // 本地注册表设置此provider注册完成
             providerInvokerWrapper.setReg(true);
         }
 
@@ -268,6 +283,9 @@ public class RegistryProtocol implements Protocol {
     }
 
     /**
+     *
+     * 根据url从registryFactory中获取对应的registry
+     *
      * Get an instance of registry based on the address of invoker
      *
      * @param originInvoker
@@ -289,6 +307,8 @@ public class RegistryProtocol implements Protocol {
 
 
     /**
+     * 获取要注册的providerUrl
+     *
      * Return the url that is registered to the registry and filter the url parameter once
      *
      * @param providerUrl
