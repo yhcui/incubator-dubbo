@@ -325,7 +325,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
     }
-
+    
+    /**
+     * 1、将服务export到本地（根据scope的配置）
+     * 2、
+     * @author cuiyuhui
+     * @created  
+     * @param
+     * @return 
+     */
     public synchronized void export() {
         checkAndUpdateSubConfigs();
 
@@ -397,6 +405,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         unexported = true;
     }
 
+    /**
+     *
+     * 由于dubbo支持多个协议，所以dubbo针对每一种协议都会在每一个注册中心注册一遍
+     *
+     * @author cuiyuhui
+     * @created  
+     * @param
+     * @return 
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
@@ -520,6 +537,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         String scope = url.getParameter(Constants.SCOPE_KEY);
+        /**
+         * scope有四种值分别为
+         * null: 代表即要export到本地同时也要export到remote
+         * none: 代表不需要进行export
+         * local: 代表仅仅需要export 到本地
+         * remote: 代表export到远程
+         * */
         // don't export when none is configured
         if (!Constants.SCOPE_NONE.equalsIgnoreCase(scope)) {
 
@@ -575,6 +599,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         this.urls.add(url);
     }
 
+    /**
+     * export服务到本地
+     * 作用: 将服务以injvm协议export出去，如果是同一个jvm的应用可以直接通过jvm发起调用，而不需要通过网络发起远程调用
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void exportLocal(URL url) {
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
@@ -983,7 +1015,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public void setProviders(List<ProviderConfig> providers) {
         this.protocols = convertProviderToProtocol(providers);
     }
-
+    /** 获取唯一服务名 */
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
         StringBuilder buf = new StringBuilder();

@@ -263,7 +263,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * 加载所有的注册中心url
+     * 加载所有的注册中心url -- 主要做用将RegisterConfig转为URL 配置，方便后面使用
+     * 加载所有的registries，可能会有多个注册中心，查找所有的registries配置并返回符合条件的
+     * 1、针对每一个registry配置，从applicationConfig、registryConfig获取参数拼装registryUrl
+     *
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side
