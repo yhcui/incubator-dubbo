@@ -46,6 +46,7 @@ public interface ProxyFactory {
     <T> T getProxy(Invoker<T> invoker, boolean generic) throws RpcException;
 
     /**
+     * 创建Inovker
      * create invoker.
      *
      * @param <T>

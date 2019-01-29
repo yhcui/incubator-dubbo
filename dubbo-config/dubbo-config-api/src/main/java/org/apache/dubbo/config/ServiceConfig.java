@@ -348,7 +348,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (export != null && !export) {
             return;
         }
-
+        /** 判断是否是延迟启动，如果是延迟启动则启动守护线程，sleep指定时间之后再调用doExport，否则直接调用 */
         if (delay != null && delay > 0) {
             delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
         } else {
@@ -423,11 +423,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+
+        // 获取配置的协议名称，如果没有配置协议名称，则使用默认协议：dubbo
         String name = protocolConfig.getName();
         if (name == null || name.length() == 0) {
             name = Constants.DUBBO;
         }
 
+        /** 从application、module、provider、ptotocol等获取配置，将这些配置加入到map中将来用来生成URL */
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
         appendRuntimeParameters(map);
@@ -492,6 +495,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             } // end of methods for
         }
 
+        /**
+         * 主要用于消费端没有 API 接口的情况；不需要引入接口 jar 包，而是直接通过 GenericService 接口来发起服务调用，
+         * 参数及返回值中的所有 POJO 均用 Map 表示。泛化调用对于服务端无需关注，按正常服务进行暴露即可。
+         * */
         if (ProtocolUtils.isGeneric(generic)) {
             map.put(Constants.GENERIC_KEY, generic);
             map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
@@ -580,6 +587,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         exporters.add(exporter);
                     }
                 } else {
+                    // 远程暴露的直连方式
                     Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
@@ -626,6 +634,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     /**
+     *
      * Register & bind IP address for service provider, can be configured separately.
      * Configuration priority: environment variables -> java system properties -> host property in config file ->
      * /etc/hosts -> default network address -> first available network address
@@ -705,6 +714,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     /**
+     * 获取port
+     * 如果port没有配置从默认端口20880开始依次向后寻找可用的port，如果port配置为-1表示随机选取一个port
+     *
      * Register port and bind port for the provider, can be configured separately
      * Configuration priority: environment variable -> java system properties -> port property in protocol config file
      * -> protocol default port

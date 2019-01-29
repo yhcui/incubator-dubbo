@@ -270,6 +270,13 @@ public class DubboProtocol extends AbstractProtocol {
         return exporter;
     }
 
+    /**
+     * 启动Netty 服务
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     private void openServer(URL url) {
         // find server.
         String key = url.getAddress();
