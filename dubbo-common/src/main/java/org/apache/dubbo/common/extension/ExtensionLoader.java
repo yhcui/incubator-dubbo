@@ -74,31 +74,40 @@ public class ExtensionLoader<T> {
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
 
+    /** 存论类型及类型对应的ExtensionLoader */
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<Class<?>, ExtensionLoader<?>>();
 
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<Class<?>, Object>();
 
     // ==============================
 
-    /** 接口class 该接口不一定必须添加@SPI注解，标明这是一个service provider interface */
+    /** 当前ExtensionLoader需要加载的扩展点Class */
     private final Class<?> type;
 
+    /** 扩展点工厂类 -- 用来生成扩展点，本来也是使用的dubbo扩展机制 */
     private final ExtensionFactory objectFactory;
 
+    /** 存放实际扩展点类，key为Class, value:为配置文件=前面 */
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<Class<?>, String>();
 
-    /** 存放类名及类型 */
+    /** 存放扩展点接口类名及扩展点Class */
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<Map<String, Class<?>>>();
 
+    /** 存放扩展点接口类名及Class */
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<String, Object>();
+
+
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
 
     /**  如果没有，通过生成类文件进行compile、加载存入*/
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
 
-    /** 缓存标记有 @Adaptive */
+    /** 缓存标记有 @Adaptive 与 cachedNames 相配合使用， cachedNames存放的是真正的扩展点类*/
     private volatile Class<?> cachedAdaptiveClass = null;
+
+    /** 缓存默认扩展名 */
     private String cachedDefaultName;
+
     private volatile Throwable createAdaptiveInstanceError;
 
     private Set<Class<?>> cachedWrapperClasses;
@@ -350,7 +359,9 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 获取指定名字的扩展，如果不存抛出异常
+     * 获取指定名字的扩展，先从缓存中获取，缓存不存在，则创建
+     * 如果名称为空不存抛出异常
+     * 如果根据名称找不到类，抛出异常
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
      */
@@ -406,7 +417,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 获取扩展点名称
+     * 获取默认扩展点名称
      *
      * Return default extension name, return <code>null</code> if not configured.
      *
@@ -501,6 +512,7 @@ public class ExtensionLoader<T> {
     /**
      *
      * 获取当前扩展的自适应实现
+     * 返回结果必须被 ExtensionFactory wrapper
      *
      * @author cuiyuhui
      * @created
@@ -694,6 +706,13 @@ public class ExtensionLoader<T> {
         return extensionClasses;
     }
 
+    /**
+     * 去dir目录下，查询type的类，并进行加载
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
         String fileName = dir + type;
         try {
@@ -716,6 +735,14 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 读取 resourceURL的文件内容，并按规则进行解析出成名称及类名，
+     * 调用loadClass加载类
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader, java.net.URL resourceURL) {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), "utf-8"));
