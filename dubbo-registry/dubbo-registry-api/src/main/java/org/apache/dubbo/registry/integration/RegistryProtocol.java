@@ -296,6 +296,15 @@ public class RegistryProtocol implements Protocol {
         return registryFactory.getRegistry(registryUrl);
     }
 
+    /**
+     *
+     * 修改registryUrl，将其协议由registry改为具体的注册中心协议，即registry://改为zookeeper://
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     private URL getRegistryUrl(Invoker<?> originInvoker) {
         URL registryUrl = originInvoker.getUrl();
         if (REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
@@ -307,7 +316,7 @@ public class RegistryProtocol implements Protocol {
 
 
     /**
-     * 获取要注册的providerUrl
+     * 获取要注册的providerUrl，移除不需要在注册中心看到的providerUrl中部分参数
      *
      * Return the url that is registered to the registry and filter the url parameter once
      *
