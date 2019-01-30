@@ -40,8 +40,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * 比如服务器 A、B、C 权重比为 5:2:1。那么在8次请求中，服务器 A 将收到其中的5次请求，服务器 B 会收到其中的2次请求，
  * 服务器 C 则收到其中的1次请求
  *
+ * 太复杂了，感觉搞不懂...
  * Round robin load balance.
- *
+ * http://dubbo.apache.org/zh-cn/docs/source_code_guide/loadbalance.html
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "roundrobin";
@@ -96,6 +97,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
     
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        // key = 全限定类名 + "." + 方法名，比如 com.xxx.DemoService.sayHello
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
 
         // 活跃服务提供者集合
