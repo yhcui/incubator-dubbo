@@ -372,6 +372,11 @@ public class Constants {
 
     public static final String REMOTE_TIMESTAMP_KEY = "remote.timestamp";
 
+    /**
+     * JVM重启后有一段预热过程，要运行一段时间，它的性能才能达到最佳状态,阿里JVM团队就针对这个缺陷进行了优化，其特性名曰：jwarmup
+     * jwarmup的大概原理：针对上次JIT对应用的优化，主动去触发JIT编译优化，而不是等jvm运行一段时间自己去感知
+     * https://taogebx.iteye.com/blog/976654
+     * */
     public static final String WARMUP_KEY = "warmup";
 
     public static final int DEFAULT_WARMUP = 10 * 60 * 1000;
