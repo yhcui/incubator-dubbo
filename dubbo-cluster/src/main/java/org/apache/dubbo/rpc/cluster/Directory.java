@@ -24,9 +24,16 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.List;
 
 /**
+ * 服务目录
+ * 服务目录中存储了一些和服务提供者有关的信息，通过服务目录，服务消费者可获取到服务提供者的信息，比如 ip、端口、服务协议等
+ * 通过这些信息，服务消费者就可通过 Netty 等客户端进行远程调用。在一个服务集群中，服务提供者数量并不是一成不变的，
+ * 如果集群中新增了一台机器，相应地在服务目录中就要新增一条服务提供者记录。或者，如果服务提供者的配置修改了，服务目录中的记录也要做相应的更新
+ * 实际上服务目录在获取注册中心的服务配置信息后，会为每条配置信息生成一个 Invoker 对象，并把这个 Invoker 对象存储起来，这个 Invoker 才是服务目录最终持有的对象
+ *
  * Directory. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Directory_service">Directory Service</a>
+ * http://dubbo.apache.org/zh-cn/docs/source_code_guide/directory.html
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  */
@@ -40,6 +47,7 @@ public interface Directory<T> extends Node {
     Class<T> getInterface();
 
     /**
+     *
      * list invokers.
      *
      * @return invokers

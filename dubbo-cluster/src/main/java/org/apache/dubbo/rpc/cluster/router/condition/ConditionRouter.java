@@ -40,8 +40,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * 条件路由规则由两个条件组成，分别用于对服务消费者和提供者进行匹配。比如有这样一条规则：
+ * host = 10.20.153.10 => host = 10.20.153.11
+ * 该条规则表示 IP 为 10.20.153.10 的服务消费者只可调用 IP 为 10.20.153.11 机器上的服务，不可调用其他机器上的服务。条件路由规则的格式如下：
+ * [服务消费者匹配条件] => [服务提供者匹配条件]
+ * 如果服务消费者匹配条件为空，表示不对服务消费者进行限制
+ * 如果服务提供者匹配条件为空，表示对某些服务消费者禁用服务
+ * 条件路由实现类 ConditionRouter 在进行工作前，需要先对用户配置的路由规则进行解析，得到一系列的条件。然后再根据这些条件对服务进行路由
  * ConditionRouter
- *
+ * http://dubbo.apache.org/zh-cn/docs/source_code_guide/router.html
  */
 public class ConditionRouter extends AbstractRouter implements Comparable<Router> {
     public static final String NAME = "condition";

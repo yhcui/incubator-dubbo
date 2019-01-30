@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ *
+ * 静态服务目录,它内部存放的 Invoker 是不会变动的。
  * StaticDirectory
  *
  */
@@ -60,6 +62,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         return invokers.get(0).getInterface();
     }
 
+    /** 检测服务目录是否可用 */
     @Override
     public boolean isAvailable() {
         if (isDestroyed()) {
@@ -67,6 +70,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         }
         for (Invoker<T> invoker : invokers) {
             if (invoker.isAvailable()) {
+                // 只要有一个 Invoker 是可用的，就认为当前目录是可用的
                 return true;
             }
         }
@@ -79,6 +83,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             return;
         }
         super.destroy();
+        /** 遍历 Invoker 列表，并执行相应的销毁逻辑 */
         for (Invoker<T> invoker : invokers) {
             invoker.destroy();
         }
