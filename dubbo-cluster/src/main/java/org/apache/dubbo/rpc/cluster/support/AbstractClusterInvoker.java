@@ -225,19 +225,34 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return null;
     }
 
+    /**
+     * 1. 查询出Invoker List
+     * 2. 加载LoadBalance
+     * 3. 调用抽象方法doInvoke
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     @Override
     public Result invoke(final Invocation invocation) throws RpcException {
         checkWhetherDestroyed();
 
+        /** 绑定 attachments 到 invocation 中 */
         // binding attachments into invocation.
         Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
             ((RpcInvocation) invocation).addAttachments(contextAttachments);
         }
 
+        /** 列举 Invoker */
         List<Invoker<T>> invokers = list(invocation);
+
+        /** 加载 LoadBalance */
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+
+        /** 调用 doInvoke 进行后续操作 */
         return doInvoke(invocation, invokers, loadbalance);
     }
 
@@ -266,10 +281,17 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                     + ". Please check if the providers have been started and registered.");
         }
     }
-
+    /** 抽象方法，由子类实现 */
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
 
+    /**
+     * 从Directory中列出所有的Invoker
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     protected List<Invoker<T>> list(Invocation invocation) throws RpcException {
         return directory.list(invocation);
     }

@@ -23,11 +23,18 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
 
 /**
+ *
+ * 集群 Cluster 用途是将多个服务提供者合并为一个 Cluster Invoker，并将这个 Invoker 暴露给服务消费者
+ * 集群模块是服务提供者和服务消费者的中间层，为服务消费者屏蔽了服务提供者的情况，这样服务消费者就可以专心处理远程调用相关事宜
+ * 集群工作过程可分为两个阶段
+ * 第一个阶段是在服务消费者初始化期间，集群 Cluster 实现类为服务消费者创建 Cluster Invoker 实例
+ * 第二个阶段是在服务消费者进行远程调用时
+ *
  * Cluster. (SPI, Singleton, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Computer_cluster">Cluster</a>
  * <a href="http://en.wikipedia.org/wiki/Fault-tolerant_system">Fault-Tolerant</a>
- *
+ * http://dubbo.apache.org/zh-cn/docs/source_code_guide/cluster.html
  */
 @SPI(FailoverCluster.NAME)
 public interface Cluster {

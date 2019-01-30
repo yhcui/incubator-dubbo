@@ -22,6 +22,9 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 /**
+ *
+ * 失败自动切换
+ *
  * {@link FailoverClusterInvoker}
  *
  */
