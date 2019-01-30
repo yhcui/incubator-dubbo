@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 调用失败后，返回一个空结果给服务提供者,并通过定时任务对失败的调用进行重传，适合执行消息通知等操作
+ *
  * When fails, record failure requests and schedule for retry on a regular interval.
  * Especially useful for services of notification.
  *
@@ -93,12 +95,19 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         Invoker<T> invoker = null;
         try {
             checkInvokers(invokers, invocation);
+
+            // 选择 Invoker
             invoker = select(loadbalance, invocation, invokers, null);
+
+            // 进行调用
             return invoker.invoke(invocation);
         } catch (Throwable e) {
+            // 如果调用过程中发生异常，此时仅打印错误日志，不抛出异常
             logger.error("Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
                     + e.getMessage() + ", ", e);
+            // 记录调用信息
             addFailed(loadbalance, invocation, invokers, invoker);
+            // 返回一个空结果给服务消费者
             return new RpcResult(); // ignore
         }
     }

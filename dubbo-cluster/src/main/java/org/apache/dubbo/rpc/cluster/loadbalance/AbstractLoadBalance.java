@@ -44,12 +44,16 @@ public abstract class AbstractLoadBalance implements LoadBalance {
 
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        // 检测 invokers 集合的合法性
         if (invokers == null || invokers.isEmpty()) {
             return null;
         }
+        // 如果 invokers 列表中仅有一个 Invoker，直接返回即可，无需进行负载均衡
         if (invokers.size() == 1) {
             return invokers.get(0);
         }
+
+        // 调用 doSelect 方法进行负载均衡，该方法为抽象方法，由子类实现
         return doSelect(invokers, url, invocation);
     }
 

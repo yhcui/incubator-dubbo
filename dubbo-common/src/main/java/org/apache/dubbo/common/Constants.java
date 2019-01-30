@@ -239,6 +239,7 @@ public class Constants {
 
     public static final String WEIGHT_KEY = "weight";
 
+    /** 最大并行数 */
     public static final String FORKS_KEY = "forks";
 
     public static final String DEFAULT_THREADPOOL = "limited";

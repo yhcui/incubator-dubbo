@@ -29,6 +29,10 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 /**
+ *
+ * 失败安全的 Cluster Invoker。所谓的失败安全是指，当调用过程中出现异常时，FailsafeClusterInvoker 仅会打印异常，而不会抛出异常
+ * 适用于写入审计日志等操作
+ *
  * When invoke fails, log the error message and ignore this error by returning an empty RpcResult.
  * Usually used to write audit logs and other operations
  *
@@ -50,6 +54,7 @@ public class FailsafeClusterInvoker<T> extends AbstractClusterInvoker<T> {
             return invoker.invoke(invocation);
         } catch (Throwable e) {
             logger.error("Failsafe ignore exception: " + e.getMessage(), e);
+            // 返回空结果忽略错误
             return new RpcResult(); // ignore
         }
     }

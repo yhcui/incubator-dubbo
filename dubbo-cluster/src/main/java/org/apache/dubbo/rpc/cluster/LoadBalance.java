@@ -27,10 +27,17 @@ import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import java.util.List;
 
 /**
+ * 中文意思为负载均衡，它的职责是将网络请求，或者其他形式的负载“均摊”到不同的机器上
+ * Dubbo 提供了4种负载均衡实现
+ * 1.基于权重随机算法的 RandomLoadBalance
+ * 2.基于最少活跃调用数算法的 LeastActiveLoadBalance
+ * 3.基于 hash 一致性的 ConsistentHashLoadBalance
+ * 4.基于加权轮询算法的 RoundRobinLoadBalance
+ *
  * LoadBalance. (SPI, Singleton, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-Balancing</a>
- *
+ * http://dubbo.apache.org/zh-cn/docs/source_code_guide/loadbalance.html
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  */
 @SPI(RandomLoadBalance.NAME)

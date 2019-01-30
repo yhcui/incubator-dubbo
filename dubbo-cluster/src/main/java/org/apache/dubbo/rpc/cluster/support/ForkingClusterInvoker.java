@@ -36,6 +36,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * 在运行时通过线程池创建多个线程，并发调用多个服务提供者。只要有一个服务提供者成功返回了结果，doInvoke 方法就会立即结束运行
+ * 应用场景是在一些对实时性要求比较高读操作（注意是读操作，并行写操作可能不安全）下使用，但这将会耗费更多的资源
+ *
  * Invoke a specific number of invokers concurrently, usually used for demanding real-time operations, but need to waste more service resources.
  *
  * <a href="http://en.wikipedia.org/wiki/Fork_(topology)">Fork</a>
@@ -59,13 +62,20 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
         try {
             checkInvokers(invokers, invocation);
             final List<Invoker<T>> selected;
+            // 获取 forks 配置
             final int forks = getUrl().getParameter(Constants.FORKS_KEY, Constants.DEFAULT_FORKS);
+            // 获取超时配置
             final int timeout = getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+
+            // 如果 forks 配置不合理，则直接将 invokers 赋值给 selected
             if (forks <= 0 || forks >= invokers.size()) {
                 selected = invokers;
             } else {
                 selected = new ArrayList<>();
+
+                // 循环选出 forks 个 Invoker，并添加到 selected 中
                 for (int i = 0; i < forks; i++) {
+                    // 选择 Invoker
                     // TODO. Add some comment here, refer chinese version for more details.
                     Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
                     if (!selected.contains(invoker)) {
@@ -78,11 +88,15 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             final AtomicInteger count = new AtomicInteger();
             final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
             for (final Invoker<T> invoker : selected) {
+                // 为每个 Invoker 创建一个执行线程
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
+                            // 进行远程调用
                             Result result = invoker.invoke(invocation);
+                            /** add:超出长度抛出异常, put:一直等待 */
+                            // 将结果存到阻塞队列中 -- offer方法在添加元素时，如果发现队列已满无法添加的话，会直接返回false
                             ref.offer(result);
                         } catch (Throwable e) {
                             int value = count.incrementAndGet();
@@ -94,7 +108,10 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 });
             }
             try {
+                // 从阻塞队列中取出远程调用结果
                 Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS);
+
+                // 如果结果类型为 Throwable，则抛出异常
                 if (ret instanceof Throwable) {
                     Throwable e = (Throwable) ret;
                     throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : 0, "Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e.getCause() != null ? e.getCause() : e);
