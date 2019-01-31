@@ -45,6 +45,7 @@ public interface Serialization {
     String getContentType();
 
     /**
+     *
      * create serializer
      *
      * @param url

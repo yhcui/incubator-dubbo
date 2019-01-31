@@ -1,0 +1,1 @@
+利用Maven BOM统一定义了dubbo依赖的第三方库的版本号。dubbo-parent会引入该bom
