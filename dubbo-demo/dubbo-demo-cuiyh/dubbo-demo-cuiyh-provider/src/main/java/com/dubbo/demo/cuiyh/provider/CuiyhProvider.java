@@ -17,6 +17,5 @@ package com.dubbo.demo.cuiyh.provider;
 public class CuiyhProvider {
 
     public static void main(String[] args) {
-
     }
 }
