@@ -1,4 +1,4 @@
-package com.dubbo.demo.cuiyh.provider;
+package com.dubbo.demo.cuiyh.consumer;
 
 /**
  * <p>TODO</p>
@@ -11,13 +11,10 @@ package com.dubbo.demo.cuiyh.provider;
  *
  * @author cuiyh9
  * @version 1.0
- * @Date Created in 2019年01月31日 16:13
+ * @Date Created in 2019年01月31日 16:27
  * @since 1.0
  */
-public class CuiyhProvider {
+public interface MyFirstService {
 
-    public static void main(String[] args) {
-        org.apache.dubbo.container.Main.main(args);
-
-    }
+    String first(String name);
 }

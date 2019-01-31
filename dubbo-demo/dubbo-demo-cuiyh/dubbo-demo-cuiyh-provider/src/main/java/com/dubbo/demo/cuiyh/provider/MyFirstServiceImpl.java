@@ -1,5 +1,7 @@
 package com.dubbo.demo.cuiyh.provider;
 
+import com.dubbo.demo.cuiyh.consumer.MyFirstService;
+
 /**
  * <p>TODO</p>
  * <p>
@@ -11,13 +13,13 @@ package com.dubbo.demo.cuiyh.provider;
  *
  * @author cuiyh9
  * @version 1.0
- * @Date Created in 2019年01月31日 16:13
+ * @Date Created in 2019年01月31日 16:28
  * @since 1.0
  */
-public class CuiyhProvider {
-
-    public static void main(String[] args) {
-        org.apache.dubbo.container.Main.main(args);
-
+public class MyFirstServiceImpl implements MyFirstService {
+    @Override
+    public String first(String name) {
+        System.out.println("Hello ," + name);
+        return "return" + name;
     }
 }
