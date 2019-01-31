@@ -10,3 +10,5 @@
 
 ### dubbo-config-spring
 * 实现了XML配置和注解配置的功能
+
+## 与spring结合

@@ -48,6 +48,7 @@ import java.util.Map;
 import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicationListener;
 
 /**
+ * provider发布服务
  * ServiceFactoryBean
  *
  * @export

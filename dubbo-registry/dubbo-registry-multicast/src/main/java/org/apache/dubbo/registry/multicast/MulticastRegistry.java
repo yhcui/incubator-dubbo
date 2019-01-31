@@ -371,6 +371,14 @@ public class MulticastRegistry extends FailbackRegistry {
         return list;
     }
 
+    /**
+     * 该方法会有子类来覆盖
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     @Override
     public void register(URL url) {
         super.register(url);

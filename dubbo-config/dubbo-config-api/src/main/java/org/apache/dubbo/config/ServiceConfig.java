@@ -327,7 +327,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
     
     /**
-     * 导出服务逻辑
+     * 导出服务逻辑 - 服务的发布与注册
      * 整个逻辑大致可分为三个部分：
      * 第一部分是前置工作，主要用于检查参数，组装 URL
      * 第二部分是导出服务，包含导出服务到本地 (JVM)，和导出服务到远程两个过程

@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * consumer发现服务 引用的Bean
+ *
  * ReferenceFactoryBean
  */
 public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
