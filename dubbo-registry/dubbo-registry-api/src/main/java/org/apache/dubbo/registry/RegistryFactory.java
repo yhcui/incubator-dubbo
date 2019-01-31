@@ -29,6 +29,8 @@ import org.apache.dubbo.common.extension.SPI;
 public interface RegistryFactory {
 
     /**
+     * 根据url获取注册
+     *
      * 连接注册中心
      *
      * Connect to the registry

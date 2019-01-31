@@ -22,6 +22,7 @@ package org.apache.dubbo.common;
 public interface Node {
 
     /**
+     * 获取注册的url
      * get url.
      *
      * @return url.
@@ -29,6 +30,7 @@ public interface Node {
     URL getUrl();
 
     /**
+     * 是否可用
      * is available.
      *
      * @return available.
@@ -36,6 +38,7 @@ public interface Node {
     boolean isAvailable();
 
     /**
+     * 消毁
      * destroy.
      */
     void destroy();
