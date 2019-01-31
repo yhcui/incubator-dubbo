@@ -232,6 +232,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (!configCenter.checkOrUpdateInited()) {
                 return;
             }
+            // 获取动态Configuration, 如果注册中心是zookeeper，这时获取的就是ZookeeperDynamicConfiguration对象
+            // 在new ZookeeperDynamicConfiguration时，会连接zookeeper
             DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             String configContent = dynamicConfiguration.getConfig(configCenter.getConfigFile(), configCenter.getGroup());
 

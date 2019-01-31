@@ -97,6 +97,7 @@ public class ExtensionLoader<T> {
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<String, Object>();
 
 
+    /** 存放的是配置文件中的key value是Holder,Hodler中持有key对应的扩展点名称 */
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
 
     /**  如果没有，通过生成类文件进行compile、加载存入*/
