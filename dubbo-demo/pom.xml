@@ -35,16 +35,17 @@
         <module>dubbo-demo-annotation</module>
         <module>dubbo-demo-api</module>
         <module>dubbo-demo-cuiyh</module>
-        <module>dubbo-demo-cuiyh</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <!--
             <dependency>
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
                 <version>3.3.3</version>
             </dependency>
+            -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-bom</artifactId>

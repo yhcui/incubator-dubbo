@@ -1,5 +1,6 @@
 package com.dubbo.demo.cuiyh.provider;
 
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * <p>TODO</p>
  * <p>
@@ -16,8 +17,11 @@ package com.dubbo.demo.cuiyh.provider;
  */
 public class CuiyhProvider {
 
-    public static void main(String[] args) {
-        org.apache.dubbo.container.Main.main(args);
+    public static void main(String[] args) throws Exception {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider.xml");
+        context.start();
+        System.out.println("cuiyh provider start-----");
+        System.in.read();
 
     }
 }
