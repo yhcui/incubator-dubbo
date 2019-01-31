@@ -83,14 +83,31 @@ public class ExchangeCodec extends TelnetCodec {
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         int readable = buffer.readableBytes();
+
+        // 创建消息头字节数组
         byte[] header = new byte[Math.min(readable, HEADER_LENGTH)];
+
+        // 读取消息头数据
         buffer.readBytes(header);
+
+        // 调用重载方法进行后续解码工作
         return decode(channel, buffer, readable, header);
     }
 
+    /**
+     * 通过检测消息头中的魔数是否与规定的魔数相等，提前拦截掉非常规数据包，比如通过 telnet 命令行发出的数据包。
+     * 接着再对消息体长度，以及可读字节数进行检测。
+     * 最后调用 decodeBody 方法进行后续的解码工作，ExchangeCodec 中实现了 decodeBody 方法，
+     * 但因其子类 DubboCodec 覆写了该方法，所以在运行时 DubboCodec 中的 decodeBody 方法会被调用
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     @Override
     protected Object decode(Channel channel, ChannelBuffer buffer, int readable, byte[] header) throws IOException {
-        // check magic number.
+        // check magic number. 检查魔数是否相等
         if (readable > 0 && header[0] != MAGIC_HIGH
                 || readable > 1 && header[1] != MAGIC_LOW) {
             int length = header.length;
@@ -105,18 +122,23 @@ public class ExchangeCodec extends TelnetCodec {
                     break;
                 }
             }
+            // 通过 telnet 命令行发送的数据包不包含消息头，所以这里
+            // 调用 TelnetCodec 的 decode 方法对数据包进行解码
             return super.decode(channel, buffer, readable, header);
         }
         // check length.
+        // 检测可读数据量是否少于消息头长度，若小于则立即返回 DecodeResult.NEED_MORE_INPUT
         if (readable < HEADER_LENGTH) {
             return DecodeResult.NEED_MORE_INPUT;
         }
 
-        // get data length.
+        // get data length.从消息头中获取消息体长度
         int len = Bytes.bytes2int(header, 12);
+        // 检测消息体长度是否超出限制，超出则抛出异常
         checkPayload(channel, len);
 
         int tt = len + HEADER_LENGTH;
+        // 检测可读的字节数是否小于实际的字节数
         if (readable < tt) {
             return DecodeResult.NEED_MORE_INPUT;
         }
@@ -125,6 +147,7 @@ public class ExchangeCodec extends TelnetCodec {
         ChannelBufferInputStream is = new ChannelBufferInputStream(buffer, len);
 
         try {
+            // 继续进行解码工作
             return decodeBody(channel, is, header);
         } finally {
             if (is.available() > 0) {
@@ -141,8 +164,12 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
+
+        // 获取消息头中的第三个字节，并通过逻辑与运算得到序列化器编号
         byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
+
         // get request id.
+        // 获取调用编号
         long id = Bytes.bytes2long(header, 4);
         if ((flag & FLAG_REQUEST) == 0) {
             // decode response.
@@ -191,9 +218,12 @@ public class ExchangeCodec extends TelnetCodec {
                 } else {
                     data = decodeRequestData(channel, in);
                 }
+                // 设置 data 到 Request 对象中
                 req.setData(data);
             } catch (Throwable t) {
                 // bad request
+                // 若解码过程中出现异常，则将 broken 字段设为 true，
+                // 并将异常对象设置到 Reqeust 对象中
                 req.setBroken(true);
                 req.setData(t);
             }
@@ -213,6 +243,17 @@ public class ExchangeCodec extends TelnetCodec {
         return req.getData();
     }
 
+    /**
+     *  该过程首先会通过位运算将消息头写入到 header 数组中。
+     *  然后对 Request 对象的 data 字段执行序列化操作，序列化后的数据最终会存储到 ChannelBuffer 中。
+     *  序列化操作执行完后，可得到数据序列化后的长度 len，紧接着将 len 写入到 header 指定位置处。
+     *  最后再将消息头字节数组 header 写入到 ChannelBuffer 中，整个编码过程就结束了
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     protected void encodeRequest(Channel channel, ChannelBuffer buffer, Request req) throws IOException {
         Serialization serialization = getSerialization(channel);
         // header. 创建消息头字节数组，长度为 16
