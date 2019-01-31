@@ -34,6 +34,10 @@ import java.util.List;
  * 3.基于 hash 一致性的 ConsistentHashLoadBalance
  * 4.基于加权轮询算法的 RoundRobinLoadBalance
  *
+ *
+ * 封装了负载均衡的实现，负责利用负载均衡算法从多个Invoker中选出具体的一个Invoker用于此次的调用，
+ * 如果调用失败，则需要重新选择
+ *
  * LoadBalance. (SPI, Singleton, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-Balancing</a>

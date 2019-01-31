@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
+ *
+ * dubbo的基本设计原则是采用URL作为配置信息的统一格式，所有拓展点都通过传递URL携带配置信息，
+ * 这个类就是用来根据统一的配置规则生成配置信息
  * Configurator. (SPI, Prototype, ThreadSafe)
  *
  */

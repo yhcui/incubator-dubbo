@@ -30,6 +30,9 @@ import java.util.List;
  * 如果集群中新增了一台机器，相应地在服务目录中就要新增一条服务提供者记录。或者，如果服务提供者的配置修改了，服务目录中的记录也要做相应的更新
  * 实际上服务目录在获取注册中心的服务配置信息后，会为每条配置信息生成一个 Invoker 对象，并把这个 Invoker 对象存储起来，这个 Invoker 才是服务目录最终持有的对象
  *
+ *
+ * Directory 代表了多个 Invoker，并且它的值会随着注册中心的服务变更推送而变化 。
+ * 这里介绍一下Invoker，Invoker是Provider的一个调用Service的抽象，Invoker封装了Provider地址以及Service接口信息
  * Directory. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Directory_service">Directory Service</a>
@@ -40,6 +43,8 @@ import java.util.List;
 public interface Directory<T> extends Node {
 
     /**
+     *
+     * 获取服务类型
      * get service type.
      *
      * @return service type.
@@ -47,7 +52,8 @@ public interface Directory<T> extends Node {
     Class<T> getInterface();
 
     /**
-     *
+     * 例出所有的Invoker
+     * invoker: 是Provider的一个调用Service的抽象，Invoker封装了Provider地址以及Service接口信息
      * list invokers.
      *
      * @return invokers

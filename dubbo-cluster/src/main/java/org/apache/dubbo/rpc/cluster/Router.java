@@ -24,6 +24,9 @@ import org.apache.dubbo.rpc.RpcException;
 import java.util.List;
 
 /**
+ *
+ * 封装了路由规则的实现，路由规则决定了一次dubbo服务调用的目标服务器，路由规则分两种：条件路由规则和脚本路由规则，并且支持可拓展
+ *
  * Router. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
