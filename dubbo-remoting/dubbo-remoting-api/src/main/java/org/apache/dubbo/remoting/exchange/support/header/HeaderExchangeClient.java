@@ -33,6 +33,10 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 /**
+ *
+ * HeaderExchangeClient 中很多方法只有一行代码，即调用 HeaderExchangeChannel 对象的同签名方法
+ * 那 HeaderExchangeClient 有什么用处呢？答案是封装了一些关于心跳检测的逻辑
+ *
  * DefaultMessageClient
  */
 public class HeaderExchangeClient implements ExchangeClient {
@@ -50,9 +54,12 @@ public class HeaderExchangeClient implements ExchangeClient {
             throw new IllegalArgumentException("client == null");
         }
         this.client = client;
+
+        // 创建 HeaderExchangeChannel 对象
         this.channel = new HeaderExchangeChannel(client);
         String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
 
+        // 以下代码均与心跳检测逻辑有关
         this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
                 dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
         this.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
@@ -61,6 +68,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         }
 
         if (needHeartbeat) {
+            // 开启心跳检测定时器
             long tickDuration = calculateLeastDuration(heartbeat);
             heartbeatTimer = new HashedWheelTimer(new NamedThreadFactory("dubbo-client-heartbeat", true), tickDuration,
                     TimeUnit.MILLISECONDS, Constants.TICKS_PER_WHEEL);
@@ -70,6 +78,7 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     @Override
     public ResponseFuture request(Object request) throws RemotingException {
+        // 直接 HeaderExchangeChannel 对象的同签名方法
         return channel.request(request);
     }
 
@@ -85,6 +94,7 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     @Override
     public ResponseFuture request(Object request, int timeout) throws RemotingException {
+        // 直接 HeaderExchangeChannel 对象的同签名方法
         return channel.request(request, timeout);
     }
 
@@ -199,6 +209,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     private void doClose() {
+        // 停止心跳检测定时器
         stopHeartbeatTimer();
     }
 
