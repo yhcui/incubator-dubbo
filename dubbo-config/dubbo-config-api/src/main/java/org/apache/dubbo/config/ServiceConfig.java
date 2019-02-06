@@ -976,6 +976,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         this.methods = (List<MethodConfig>) methods;
     }
 
+    /**
+     * 获取provider config
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     public ProviderConfig getProvider() {
         return provider;
     }

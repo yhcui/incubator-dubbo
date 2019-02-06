@@ -2,7 +2,8 @@ package com.dubbo.demo.cuiyh.provider;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
- * <p>TODO</p>
+ * DubboNamespaceHandler
+ * ServiceBean -- spring 生命周期
  * <p>
  * <PRE>
  * <BR>    修改记录
