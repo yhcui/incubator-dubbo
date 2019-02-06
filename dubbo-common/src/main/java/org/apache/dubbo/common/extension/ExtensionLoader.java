@@ -612,7 +612,7 @@ public class ExtensionLoader<T> {
 
     /**
      * 为扩展注入依赖的其他扩展实现
-     *
+     * 目前仅支持 setter 方式注入
      * @author cuiyuhui
      * @created
      * @param
@@ -621,7 +621,9 @@ public class ExtensionLoader<T> {
     private T injectExtension(T instance) {
         try {
             if (objectFactory != null) {
+                // 通过反射获取所有的方法，并遍历方法
                 for (Method method : instance.getClass().getMethods()) {
+                    // 检测方法是否以 set 开头，且方法仅有一个参数，且方法访问级别为 public
                     if (method.getName().startsWith("set")
                             && method.getParameterTypes().length == 1
                             && Modifier.isPublic(method.getModifiers())) {
@@ -631,14 +633,25 @@ public class ExtensionLoader<T> {
                         if (method.getAnnotation(DisableInject.class) != null) {
                             continue;
                         }
+                        // 获取 setter 方法参数类型
                         Class<?> pt = method.getParameterTypes()[0];
                         if (ReflectUtils.isPrimitives(pt)) {
                             continue;
                         }
                         try {
+                            // 获取属性名，比如 setName 方法对应属性名 name
                             String property = method.getName().length() > 3 ? method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4) : "";
+                            // 通过 ObjectFactory 获取依赖对象
+                            /**
+                             * objectFactory的变量类型为 AdaptiveExtensionFactory
+                             * AdaptiveExtensionFactory内部维护了一个ExtensionFactory列表，用于存储其他类型的 ExtensionFactory
+                             * Dubbo 目前提供了两种 ExtensionFactory，分别是 SpiExtensionFactory 和 SpringExtensionFactory
+                             * 前者用于创建自适应的拓展，后者是用于从 Spring 的 IOC 容器中获取所需的拓展
+                             *
+                             * */
                             Object object = objectFactory.getExtension(pt, property);
                             if (object != null) {
+                                // 通过反射调用 setter 方法设置依赖
                                 method.invoke(instance, object);
                             }
                         } catch (Exception e) {
