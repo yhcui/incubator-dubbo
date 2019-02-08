@@ -100,7 +100,7 @@ public class ExtensionLoader<T> {
     /** 存放的是配置文件中的key value是Holder,Hodler中持有key对应的扩展点名称 */
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
 
-    /**  如果没有，通过生成类文件进行compile、加载存入*/
+    /**  自适应拓展。 如果没有，通过生成类文件进行compile、加载存入*/
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
 
     /** 缓存标记有 @Adaptive 与 cachedNames 相配合使用， cachedNames存放的是真正的扩展点类*/
@@ -523,14 +523,18 @@ public class ExtensionLoader<T> {
      */
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
+        // 从缓存中获取自适应拓展
         Object instance = cachedAdaptiveInstance.get();
-        if (instance == null) {
+        if (instance == null) { // 缓存未命中
             if (createAdaptiveInstanceError == null) {
                 synchronized (cachedAdaptiveInstance) {
                     instance = cachedAdaptiveInstance.get();
                     if (instance == null) {
                         try {
+                            // 创建自适应拓展
                             instance = createAdaptiveExtension();
+
+                            // 设置自适应拓展到缓存中
                             cachedAdaptiveInstance.set(instance);
                         } catch (Throwable t) {
                             createAdaptiveInstanceError = t;
@@ -678,6 +682,9 @@ public class ExtensionLoader<T> {
     }
 
     /**
+     * 用于获取某个接口的所有实现类。比如该方法可以获取 Protocol 接口的 DubboProtocol、HttpProtocol、InjvmProtocol 等实现类
+     * 在获取实现类的过程中，如果某个某个实现类被 Adaptive 注解修饰了，那么该类就会被赋值给 cachedAdaptiveClass 变量
+     *
      *
      * 从配置文件中加载所有的拓展类，可得到“配置项名称”到“配置类”的映射关系表.
      * 将获取的关系表放入cachedClasses Map中
@@ -924,10 +931,12 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> getAdaptiveExtensionClass() {
+        // 通过 SPI 获取所有的拓展类
         getExtensionClasses();
         if (cachedAdaptiveClass != null) {
             return cachedAdaptiveClass;
         }
+        // 创建自适应拓展类
         return cachedAdaptiveClass = createAdaptiveExtensionClass();
     }
 
@@ -939,9 +948,14 @@ public class ExtensionLoader<T> {
      * @return
      */
     private Class<?> createAdaptiveExtensionClass() {
+        // 构建自适应拓展代码
         String code = createAdaptiveExtensionClassCode();
         ClassLoader classLoader = findClassLoader();
+
+        // 获取编译器实现类 -- Dubbo 默认使用 javassist 作为编译器
         org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
+
+        // 编译代码，生成 Class
         return compiler.compile(code, classLoader);
     }
 
@@ -954,23 +968,38 @@ public class ExtensionLoader<T> {
      */
     private String createAdaptiveExtensionClassCode() {
         StringBuilder codeBuilder = new StringBuilder();
+
+        // Adaptive 注解检测 -  首先会通过反射检测接口方法是否包含 Adaptive 注解
+        // 通过反射获取所有的方法
         Method[] methods = type.getMethods();
         boolean hasAdaptiveAnnotation = false;
         for (Method m : methods) {
+            // 检测方法上是否有 Adaptive 注解
             if (m.isAnnotationPresent(Adaptive.class)) {
                 hasAdaptiveAnnotation = true;
                 break;
             }
         }
+
+
         // no need to generate adaptive class since there's no adaptive method found.
         if (!hasAdaptiveAnnotation) {
+            // 若所有的方法上均无 Adaptive 注解，则抛出异常
             throw new IllegalStateException("No adaptive method on extension " + type.getName() + ", refuse to create the adaptive class!");
         }
 
+        /** 生成类 */
+
+        // 生成package 代码：package + type 所在包
         codeBuilder.append("package ").append(type.getPackage().getName()).append(";");
+
+        // 生成import 代码：import + ExtensionLoader 全限定名
         codeBuilder.append("\nimport ").append(ExtensionLoader.class.getName()).append(";");
+
+        // 生成类代码：public class + type简单名称 + $Adaptive + implements + type全限定名 + {
         codeBuilder.append("\npublic class ").append(type.getSimpleName()).append("$Adaptive").append(" implements ").append(type.getCanonicalName()).append(" {");
 
+        // 生成方法 一个方法可以被 Adaptive 注解修饰，也可以不被修饰
         for (Method method : methods) {
             Class<?> rt = method.getReturnType();
             Class<?>[] pts = method.getParameterTypes();
@@ -978,11 +1007,15 @@ public class ExtensionLoader<T> {
 
             Adaptive adaptiveAnnotation = method.getAnnotation(Adaptive.class);
             StringBuilder code = new StringBuilder(512);
+
+            // 不包括Adaptive注解的情况
             if (adaptiveAnnotation == null) {
                 code.append("throw new UnsupportedOperationException(\"method ")
                         .append(method.toString()).append(" of interface ")
                         .append(type.getName()).append(" is not adaptive method!\");");
             } else {
+
+                // 遍历参数列表，确定 URL 参数位置
                 int urlTypeIndex = -1;
                 for (int i = 0; i < pts.length; ++i) {
                     if (pts[i].equals(URL.class)) {
@@ -990,6 +1023,8 @@ public class ExtensionLoader<T> {
                         break;
                     }
                 }
+
+                // urlTypeIndex != -1，表示参数列表中存在 URL 参数
                 // found parameter in URL type
                 if (urlTypeIndex != -1) {
                     // Null Point check
@@ -1002,6 +1037,7 @@ public class ExtensionLoader<T> {
                 }
                 // did not find parameter in URL type
                 else {
+                    // 参数列表中不存在 URL 类型参数
                     String attribMethod = null;
 
                     // find URL getter method
@@ -1145,6 +1181,8 @@ public class ExtensionLoader<T> {
             codeBuilder.append(code.toString());
             codeBuilder.append("\n}");
         }
+
+        // 生成类文件的最后的}
         codeBuilder.append("\n}");
         if (logger.isDebugEnabled()) {
             logger.debug(codeBuilder.toString());
