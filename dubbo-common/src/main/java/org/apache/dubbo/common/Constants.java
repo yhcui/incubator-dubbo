@@ -673,6 +673,14 @@ public class Constants {
 
     public static final String AUTO_ATTACH_INVOCATIONID_KEY = "invocationid.autoattach";
 
+    /**
+     * scope 代表export的位置
+     * 有四种值分别为
+     * null: 代表即要export到本地同时也要export到remote
+     * none: 代表不需要进行export
+     * local: 代表仅仅需要export 到本地
+     * remote: 代表export到远程
+     * */
     public static final String SCOPE_KEY = "scope";
 
     public static final String SCOPE_LOCAL = "local";

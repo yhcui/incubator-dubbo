@@ -50,8 +50,8 @@ public interface ProxyFactory {
      * create invoker.
      *
      * @param <T>
-     * @param proxy
-     * @param type
+     * @param proxy 接口实例
+     * @param type 接口名
      * @param url
      * @return invoker
      */

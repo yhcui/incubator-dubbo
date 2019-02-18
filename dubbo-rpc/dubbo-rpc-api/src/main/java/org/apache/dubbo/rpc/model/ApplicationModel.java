@@ -31,6 +31,9 @@ import java.util.concurrent.ConcurrentMap;
  * and many Consumer Model which is about subscribed services.
  *
  * adjust project structure in order to fully utilize the methods introduced here.
+ *
+ * 应用模型
+ *
  */
 public class ApplicationModel {
 
@@ -38,6 +41,7 @@ public class ApplicationModel {
 
     /**
      * full qualified class name -> provided service
+     * 接口名 - 服务模型
      */
     private static final ConcurrentMap<String, ProviderModel> providedServices = new ConcurrentHashMap<>();
     /**

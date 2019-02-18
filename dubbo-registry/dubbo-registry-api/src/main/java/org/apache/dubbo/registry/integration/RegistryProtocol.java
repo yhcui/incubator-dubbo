@@ -153,7 +153,9 @@ public class RegistryProtocol implements Protocol {
     }
 
     public void register(URL registryUrl, URL registeredProviderUrl) {
+        // 获取 Registry
         Registry registry = registryFactory.getRegistry(registryUrl);
+        // 注册服务
         registry.register(registeredProviderUrl);
     }
 
@@ -164,6 +166,7 @@ public class RegistryProtocol implements Protocol {
 
     /**
      *
+     * 服务注册
      * 把provider的信息注册到registry，并且订阅configurators
      *
      * @author cuiyuhui
@@ -202,14 +205,14 @@ public class RegistryProtocol implements Protocol {
         //to judge if we need to delay publish
         boolean register = registeredProviderUrl.getParameter("register", true);
         if (register) {
-            // 向注册中心注册providerUrl
+            /** 向注册中心注册providerUrl */
             register(registryUrl, registeredProviderUrl);
 
-            // 本地注册表设置此provider注册完成
+            /** 本地注册表设置此provider注册完成 */
             providerInvokerWrapper.setReg(true);
         }
 
-        // Deprecated! Subscribe to override rules in 2.6.x or before.
+        // Deprecated! Subscribe to override rules in 2.6.x or before. 订阅 override 数据
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
 
         exporter.setRegisterUrl(registeredProviderUrl);

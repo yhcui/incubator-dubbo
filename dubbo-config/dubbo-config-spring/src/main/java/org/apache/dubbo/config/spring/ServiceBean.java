@@ -49,6 +49,7 @@ import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicatio
 
 /**
  * provider发布服务
+ * 每一个dubbo:service对应一个ServiceBean
  * ServiceFactoryBean
  *
  * @export

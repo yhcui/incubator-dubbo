@@ -26,7 +26,7 @@ import java.util.Map;
  * DubboExporter
  */
 public class DubboExporter<T> extends AbstractExporter<T> {
-
+    /** 服务接口类名+端口 */
     private final String key;
 
     private final Map<String, Exporter<?>> exporterMap;

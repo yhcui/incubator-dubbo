@@ -73,9 +73,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public /**final**/ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
-
+    /** url协议名称 */
     private final String protocol;
-
+    /**  */
     private final String username;
 
     private final String password;
@@ -87,7 +87,7 @@ public /**final**/ class URL implements Serializable {
     private final int port;
 
     private final String path;
-
+    /** URL中后面跟的动态参数，不可变map */
     private final Map<String, String> parameters;
 
     // ==== cache ====

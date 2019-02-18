@@ -25,11 +25,16 @@ import java.util.Map;
 
 /**
  * ProviderModel which is about published services
+ * 服务的模型
  */
 public class ProviderModel {
+    /** 服务对应接口名 全类名 */
     private final String serviceName;
+    /** 服务实例 */
     private final Object serviceInstance;
+    /** 服务对应接口 class实例 */
     private final Class<?> serviceInterfaceClass;
+    /** 服务名 -> 服务方法模型列表 */
     private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
 
     public ProviderModel(String serviceName, Object serviceInstance, Class<?> serviceInterfaceClass) {

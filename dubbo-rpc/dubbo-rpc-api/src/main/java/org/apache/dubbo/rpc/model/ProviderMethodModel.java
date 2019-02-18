@@ -18,10 +18,21 @@ package org.apache.dubbo.rpc.model;
 
 import java.lang.reflect.Method;
 
+/**
+ * 服务中方法的模型
+ * @author cuiyuhui
+ * @created
+ * @param
+ * @return
+ */
 public class ProviderMethodModel {
+    /** 方法对象 */
     private transient final Method method;
+    /** 方法名 */
     private final String methodName;
+    /** 方法参数 */
     private final String[] methodArgTypes;
+    /** 服务名(接口) - 全限类名 */
     private final String serviceName;
 
 

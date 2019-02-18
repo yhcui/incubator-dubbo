@@ -269,6 +269,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * 加载所有的registries，可能会有多个注册中心，查找所有的registries配置并返回符合条件的
      * 1、针对每一个registry配置，从applicationConfig、registryConfig获取参数拼装registryUrl
      *
+     * 注册中心示例:
+     * registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=demo-provider&dubbo=2.0.2&pid=22041&qos.port=22222&registry=zookeeper&timestamp=1550477794897
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side

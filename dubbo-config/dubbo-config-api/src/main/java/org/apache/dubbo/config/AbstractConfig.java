@@ -579,6 +579,14 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    /**
+     * 示例
+     * <dubbo:protocol name="dubbo" valid="true" id="dubbo" prefix="dubbo.protocols." />
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     @Override
     public String toString() {
         try {

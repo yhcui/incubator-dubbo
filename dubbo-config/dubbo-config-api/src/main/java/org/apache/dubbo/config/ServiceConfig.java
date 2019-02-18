@@ -431,7 +431,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
-
+    /** 使用1种协议导出到所有注册中心 */
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
 
         // 获取配置的协议名称，如果没有配置协议名称，则使用默认协议：dubbo
@@ -442,8 +442,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         /** 从application、module、provider、ptotocol等获取配置，将这些配置加入到map中将来用来生成URL */
         Map<String, String> map = new HashMap<String, String>();
-        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
-        appendRuntimeParameters(map);
+        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE); /** side 标识是provider还是consumer*/
+        appendRuntimeParameters(map); /**加入dubbo版本、pid、时间戳等运行相关信息*/
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
@@ -525,7 +525,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
                 map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
             } else {
-                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ",")); /** 存放服务的方法列表 */
             }
         }
         if (!ConfigUtils.isEmpty(token)) {
@@ -570,7 +570,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!Constants.SCOPE_REMOTE.equalsIgnoreCase(scope)) {
-                exportLocal(url);
+                exportLocal(url); /** 本地调用，使用了Injvm协议，是一个伪协议，它不开启端口，不发起远程调用，只在JVM内直接关联，但执行Dubbo的Filter链 */
             }
             // export to remote if the config is not local (export to local only when config is local)
             if (!Constants.SCOPE_LOCAL.equalsIgnoreCase(scope)) {
@@ -593,13 +593,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (StringUtils.isNotEmpty(proxy)) {
                             registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
                         }
-                        /** 以registryUrl创建Invoker */
+                        /** 以registryUrl创建Invoker. registryUrl中添加export参数,value为待导出服务的url string形式 */
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         /** 包装Invoker和ServiceConfig */
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
                         /** 以RegistryProtocol为主，注册和订阅注册中心，并暴露本地服务端口 */
-                        Exporter<?> exporter = protocol.export(wrapperInvoker);
+                        Exporter<?> exporter = protocol.export(wrapperInvoker); /** 构建Exporter对象 */
                         exporters.add(exporter);
                     }
                 } else {
