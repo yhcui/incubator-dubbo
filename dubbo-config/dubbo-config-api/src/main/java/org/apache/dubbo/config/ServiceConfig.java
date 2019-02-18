@@ -425,8 +425,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
+        // 获取注册中心的配置信息(URL形式的 配置)
         List<URL> registryURLs = loadRegistries(true);
-        for (ProtocolConfig protocolConfig : protocols) {
+        for (ProtocolConfig protocolConfig : protocols) { //dubbo 服务支持的协议
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }

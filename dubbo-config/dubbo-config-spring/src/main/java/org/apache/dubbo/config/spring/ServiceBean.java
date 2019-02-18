@@ -102,10 +102,20 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (logger.isInfoEnabled()) {
                 logger.info("The service ready on spring started. service: " + getInterface());
             }
+            // 导出服务
             export();
         }
     }
 
+    /**
+     * 首先执行 afterPropertiesSet
+     * 之后再执行 onApplicationEvent
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     @Override
     @SuppressWarnings({"unchecked", "deprecation"})
     public void afterPropertiesSet() throws Exception {
