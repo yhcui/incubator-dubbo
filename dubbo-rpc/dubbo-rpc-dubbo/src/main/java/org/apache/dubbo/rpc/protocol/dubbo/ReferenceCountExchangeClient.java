@@ -40,11 +40,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
     private final URL url;
-    // 引用计数自增
+
+    /** 引用计数自增 */
     private final AtomicInteger referenceCount = new AtomicInteger(0);
 
-    //    private final ExchangeHandler handler;
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
+
     private ExchangeClient client;
 
 
