@@ -71,6 +71,10 @@ import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
  * 注册目录
  * 种动态服务目录，实现了 NotifyListener 接口。当注册中心服务配置发生变化后，RegistryDirectory 可收到与当前服务相关的变化。
  * 收到变更通知后，RegistryDirectory 可根据配置变更信息刷新 Invoker 列表
+ * RegistryDirectory 中有几个比较重要的逻辑:
+ * 第一是 Invoker 的列举逻辑，
+ * 第二是 接收服务配置变更的逻辑，
+ * 第三是 Invoker 列表的刷新逻辑
  *
  * RegistryDirectory
  */
