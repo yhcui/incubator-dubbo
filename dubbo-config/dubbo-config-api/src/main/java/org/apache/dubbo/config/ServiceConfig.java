@@ -349,6 +349,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 delay = provider.getDelay();
             }
         }
+
+        /**
+         *
+         * 如果 export 为 false，则不导出服务
+         * export 配置，这个配置决定了是否导出服务。
+         * 有时候我们只是想本地启动服务进行一些调试工作，我们并不希望把本地启动的服务暴露出去给别人调用。
+         * 此时，我们可通过配置 export 禁止服务导出，比如:
+         * <dubbo:provider export="false" />
+         * */
         if (export != null && !export) {
             return;
         }
