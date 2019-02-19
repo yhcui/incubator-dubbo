@@ -36,6 +36,7 @@ import java.util.List;
 public class StaticDirectory<T> extends AbstractDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(StaticDirectory.class);
 
+    // Invoker 列表
     private final List<Invoker<T>> invokers;
 
     public StaticDirectory(List<Invoker<T>> invokers) {
@@ -52,13 +53,15 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
 
     public StaticDirectory(URL url, List<Invoker<T>> invokers, RouterChain<T> routerChain) {
         super(url == null && invokers != null && !invokers.isEmpty() ? invokers.get(0).getUrl() : url, routerChain);
-        if (invokers == null || invokers.isEmpty())
+        if (invokers == null || invokers.isEmpty()) {
             throw new IllegalArgumentException("invokers == null");
+        }
         this.invokers = invokers;
     }
 
     @Override
     public Class<T> getInterface() {
+        // 获取接口类
         return invokers.get(0).getInterface();
     }
 
@@ -82,6 +85,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (isDestroyed()) {
             return;
         }
+        // 调用父类销毁逻辑
         super.destroy();
         /** 遍历 Invoker 列表，并执行相应的销毁逻辑 */
         for (Invoker<T> invoker : invokers) {
