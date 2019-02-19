@@ -530,7 +530,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
                 map.put(Constants.METHODS_KEY, Constants.ANY_VALUE);
             } else {
-                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ",")); /** 存放服务的方法列表 */
+                /** 存放服务的方法列表 */
+                map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
         if (!ConfigUtils.isEmpty(token)) {
@@ -605,7 +606,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         /** 包装Invoker和ServiceConfig */
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
-                        /** 构建Exporter对象. 以RegistryProtocol为主，注册和订阅注册中心，并暴露本地服务端口  */
+                        /**
+                         *  构建Exporter对象. 以RegistryProtocol为主，注册和订阅注册中心，并暴露本地服务端口
+                         *  protocol是循环的，包括了DubboProtocol和RegistryProtocol两个
+                         *  DubboProtocol:启动dubbo服务
+                         *  RegistryProtocol: 向注册中心注册服务数据
+                         * */
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }
