@@ -54,7 +54,7 @@ public class Transporters {
             // 如果 handlers 元素数量大于1，则创建 ChannelHandler 分发器
             handler = new ChannelHandlerDispatcher(handlers);
         }
-        // 获取自适应 Transporter 实例，并调用实例方法
+        // 获取自适应 Transporter 实例，并调用 connect 方法生成 Client 实例
         return getTransporter().bind(url, handler);
     }
 
@@ -77,6 +77,16 @@ public class Transporters {
         return getTransporter().connect(url, handler);
     }
 
+    /**
+     * getTransporter 方法返回的是自适应拓展类，
+     * 该类会在运行时根据客户端类型加载指定的 Transporter 实现类。
+     * 若用户未配置客户端类型，则默认加载 NettyTransporter，并调用该类的 connect 方法
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     public static Transporter getTransporter() {
         return ExtensionLoader.getExtensionLoader(Transporter.class).getAdaptiveExtension();
     }
