@@ -59,8 +59,23 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("consumer", new DubboBeanDefinitionParser(ConsumerConfig.class, true));
         registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class, true));
 
-        /** 服务提供者暴露服务配置 service代表一个类 */
+        /** 服务提供者暴露服务配置 service代表一个类 ServiceBean也是服务暴漏的一个节点 */
         registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class, true));
+
+        /**
+         * 服务引用配置, 时机有两个
+         * 第一个是在 Spring 容器调用 ReferenceBean 的 afterPropertiesSet 方法时引用服务，
+         * 第二个是在 ReferenceBean 对应的服务被注入到其他类中时引用。
+         * 这两个引用服务的时机区别在于，第一个是饿汉式的，第二个是懒汉式的。
+         * 默认情况下，Dubbo 使用懒汉式引用服务。
+         * 如果需要使用饿汉式，可通过配置 <dubbo:reference> 的 init 属性开启
+         *
+         * 在 Dubbo 中，我们可以通过两种方式引用远程服务。
+         * 第一种是使用服务直联的方式引用服务，第二种方式是基于注册中心进行引用。
+         * 服务直联的方式仅适合在调试或测试服务的场景下使用，不适合在线上环境使用
+         *
+         * 当我们的服务被注入到其他类中时，Spring 会第一时间调用 ReferenceBean的getObject 方法，并由该方法执行服务引用逻辑
+         * */
         registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class, false));
         registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
     }
