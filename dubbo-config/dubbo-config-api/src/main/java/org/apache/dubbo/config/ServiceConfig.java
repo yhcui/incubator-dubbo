@@ -427,7 +427,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void doExportUrls() {
         // 获取注册中心的配置信息(URL形式的 配置)
         List<URL> registryURLs = loadRegistries(true);
-        for (ProtocolConfig protocolConfig : protocols) { //dubbo 服务支持的协议
+        // protocols: dubbo 服务支持的协议
+        for (ProtocolConfig protocolConfig : protocols) {
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
@@ -442,8 +443,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         /** 从application、module、provider、ptotocol等获取配置，将这些配置加入到map中将来用来生成URL */
         Map<String, String> map = new HashMap<String, String>();
-        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE); /** side 标识是provider还是consumer*/
-        appendRuntimeParameters(map); /**加入dubbo版本、pid、时间戳等运行相关信息*/
+
+        /** side 标识是provider还是consumer */
+        map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
+
+        /** 加入dubbo版本、pid、时间戳等运行相关信息 */
+        appendRuntimeParameters(map);
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
@@ -570,7 +575,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!Constants.SCOPE_REMOTE.equalsIgnoreCase(scope)) {
-                exportLocal(url); /** 本地调用，使用了Injvm协议，是一个伪协议，它不开启端口，不发起远程调用，只在JVM内直接关联，但执行Dubbo的Filter链 */
+                /** 本地调用，使用了Injvm协议，是一个伪协议，它不开启端口，不发起远程调用，只在JVM内直接关联，但执行Dubbo的Filter链 */
+                exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
             if (!Constants.SCOPE_LOCAL.equalsIgnoreCase(scope)) {
@@ -595,11 +601,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         }
                         /** 以registryUrl创建Invoker. registryUrl中添加export参数,value为待导出服务的url string形式 */
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+
                         /** 包装Invoker和ServiceConfig */
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
-                        /** 以RegistryProtocol为主，注册和订阅注册中心，并暴露本地服务端口 */
-                        Exporter<?> exporter = protocol.export(wrapperInvoker); /** 构建Exporter对象 */
+                        /** 构建Exporter对象. 以RegistryProtocol为主，注册和订阅注册中心，并暴露本地服务端口  */
+                        Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }
                 } else {
