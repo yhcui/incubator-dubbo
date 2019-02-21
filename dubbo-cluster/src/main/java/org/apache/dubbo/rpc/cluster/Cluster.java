@@ -24,11 +24,20 @@ import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
 
 /**
  *
+ * 为了避免单点故障，现在的应用通常至少会部署在两台服务器上。
+ * 对于一些负载比较高的服务，会部署更多的服务器。这样，在同一环境下的服务提供者数量会大于1。
+ * 对于服务消费者来说，同一环境下出现了多个服务提供者。这时会出现一个问题，服务消费者需要决定选择哪个服务提供者进行调用。
+ * 另外服务调用失败时的处理措施也是需要考虑的，是重试呢，还是抛出异常，亦或是只打印异常等。
+ * 为了处理这些问题，Dubbo 定义了集群接口 Cluster 以及 Cluster Invoker。
+ *
+ *
  * 集群 Cluster 用途是将多个服务提供者合并为一个 Cluster Invoker，并将这个 Invoker 暴露给服务消费者
  * 集群模块是服务提供者和服务消费者的中间层，为服务消费者屏蔽了服务提供者的情况，这样服务消费者就可以专心处理远程调用相关事宜
  * 集群工作过程可分为两个阶段
  * 第一个阶段是在服务消费者初始化期间，集群 Cluster 实现类为服务消费者创建 Cluster Invoker 实例
  * 第二个阶段是在服务消费者进行远程调用时
+ *
+ * Dubbo 提供了多种集群实现，包含但不限于 Failover Cluster、Failfast Cluster 和 Failsafe Cluster 等
  *
  * Cluster. (SPI, Singleton, ThreadSafe)
  * <p>

@@ -26,6 +26,10 @@ import java.util.List;
 /**
  *
  * 封装了路由规则的实现，路由规则决定了一次dubbo服务调用的目标服务器，路由规则分两种：条件路由规则和脚本路由规则，并且支持可拓展
+ * 作用:
+ * 读写分离、隔离不同机房网段等
+ *
+ * http://dubbo.apache.org/zh-cn/docs/user/demos/routing-rule.html
  *
  * Router. (SPI, Prototype, ThreadSafe)
  * <p>
