@@ -405,6 +405,15 @@ public class ExtensionLoader<T> {
         return getExtension(cachedDefaultName);
     }
 
+    /**
+     *
+     * 判断ExtensionLoader是否存名称为name的扩展点
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     public boolean hasExtension(String name) {
         if (name == null || name.length() == 0) {
             throw new IllegalArgumentException("Extension name == null");

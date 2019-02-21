@@ -17,12 +17,15 @@
 package org.apache.dubbo.common;
 
 /**
+ *
+ * 包含了一个获取配置信息的方法 getUrl，实现该接口的类可以向外提供配置信息
+ *
  * Node. (API/SPI, Prototype, ThreadSafe)
  */
 public interface Node {
 
     /**
-     * 获取注册的url
+     * 获取注册的url - 配置信息
      * get url.
      *
      * @return url.
