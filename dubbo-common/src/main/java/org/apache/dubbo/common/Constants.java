@@ -307,6 +307,7 @@ public class Constants {
 
     public static final String CONNECT_TIMEOUT_KEY = "connect.timeout";
 
+    /** 超时配置 */
     public static final String TIMEOUT_KEY = "timeout";
 
     public static final String RETRIES_KEY = "retries";

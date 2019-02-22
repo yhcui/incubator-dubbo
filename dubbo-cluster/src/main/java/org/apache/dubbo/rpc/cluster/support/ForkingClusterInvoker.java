@@ -62,7 +62,9 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
         try {
             checkInvokers(invokers, invocation);
             final List<Invoker<T>> selected;
-            // 获取 forks 配置
+
+            // -------------------------- 选出 forks 个 Invoker  start --------------------------
+            // 获取 forks 配置 - forks: 最大并发数
             final int forks = getUrl().getParameter(Constants.FORKS_KEY, Constants.DEFAULT_FORKS);
             // 获取超时配置
             final int timeout = getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
@@ -84,9 +86,15 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     }
                 }
             }
+
+
+
+            // -------------------------- 通过线程池并发调用多个 Invoker 并将结果存储在阻塞队列中 start --------------------------
             RpcContext.getContext().setInvokers((List) selected);
             final AtomicInteger count = new AtomicInteger();
             final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
+
+            // 遍历 selected 列表
             for (final Invoker<T> invoker : selected) {
                 // 为每个 Invoker 创建一个执行线程
                 executor.execute(new Runnable() {
@@ -100,13 +108,24 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                             ref.offer(result);
                         } catch (Throwable e) {
                             int value = count.incrementAndGet();
+                            /**
+                             * 仅在 value 大于等于 selected.size() 时，才将异常对象放入阻塞队列中，思考一下为什么要这样做?
+                             * 原因:在并行调用多个服务提供者的情况下，只要有一个服务提供者能够成功返回结果，而其他全部失败。
+                             * 此时 ForkingClusterInvoker 仍应该返回成功的结果，而非抛出异常。
+                             * 在value >= selected.size()时将异常对象放入阻塞队列中，可以保证异常对象不会出现在正常结果的前面，
+                             * 这样可从阻塞队列中优先取出正常的结果
+                             *
+                             * */
                             if (value >= selected.size()) {
+                                // 将异常对象存入到阻塞队列中
                                 ref.offer(e);
                             }
                         }
                     }
                 });
             }
+
+            // -------------------------- 从阻塞队列中获取返回结果，并对返回结果类型进行判断 --------------------------
             try {
                 // 从阻塞队列中取出远程调用结果
                 Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS);

@@ -356,6 +356,10 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
 
     /**
+     *
+     * 根据invokers和invocation获取LoadBalance
+     * 最终是根据url中配置的方法中获取对应的LoadBalance
+     *
      * Init LoadBalance.
      * <p>
      * if invokers is not empty, init from the first invoke's url and invocation
