@@ -38,6 +38,15 @@ import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
  * 第二个阶段是在服务消费者进行远程调用时
  *
  * Dubbo 提供了多种集群实现，包含但不限于 Failover Cluster、Failfast Cluster 和 Failsafe Cluster 等
+ * Failover Cluster: 失败转移
+ * Failfast Cluster: 快速失败
+ * Failsafe Cluster: 失败安全
+ * Failback Cluster: 失败自动恢复
+ * Forking Cluster: 并行调用多个服务提供者
+ *
+ * 集群接口 Cluster 和 Cluster Invoker，这两者是不同的。
+ * Cluster 是接口，而 Cluster Invoker 是一种 Invoker。
+ * 服务提供者的选择逻辑，以及远程调用失败后的的处理逻辑均是封装在 Cluster Invoker 中
  *
  * Cluster. (SPI, Singleton, ThreadSafe)
  * <p>

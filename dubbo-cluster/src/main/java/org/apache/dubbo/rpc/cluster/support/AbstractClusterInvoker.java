@@ -41,6 +41,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ *
+ * 集群工作过程可分为两个阶段，第一个阶段是在服务消费者初始化期间。
+ * 第二个阶段是在服务消费者进行远程调用时，此时 AbstractClusterInvoker 的 invoke 方法会被调用。
+ * 列举 Invoker，负载均衡等操作均会在此阶段被执行
+ *
  * AbstractClusterInvoker
  */
 public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
@@ -269,6 +274,8 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
 
     /**
+     *
+     * TODO - 调用方是否为消费者????
      * 1. 查询出Invoker List
      * 2. 加载LoadBalance
      * 3. 调用抽象方法doInvoke
@@ -288,7 +295,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             ((RpcInvocation) invocation).addAttachments(contextAttachments);
         }
 
-        /** 列举 Invoker */
+        /** 列举 Invoker -- 从Directory中获取  */
         List<Invoker<T>> invokers = list(invocation);
 
         /** 加载 LoadBalance */
@@ -352,9 +359,11 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
      */
     protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isNotEmpty(invokers)) {
+            // 获取配置的负载均衡算法，如何没有，使用默认负载均衡算法
             return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(RpcUtils.getMethodName(invocation), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
         } else {
+            // 获取默认负载均衡算法，默认为random
             return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
         }
     }

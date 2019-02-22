@@ -61,7 +61,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         checkInvokers(copyInvokers, invocation);
         String methodName = RpcUtils.getMethodName(invocation);
 
-        // 获取重试次数
+        // 获取重试次数,如果重试次数没有进行配置，则取默认配置次为2
         int len = getUrl().getMethodParameter(methodName, Constants.RETRIES_KEY, Constants.DEFAULT_RETRIES) + 1;
         if (len <= 0) {
             len = 1;
@@ -69,14 +69,16 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         // retry loop.
         RpcException le = null; // last exception.
 
-        /** 调用过的invoker 列表 */
+        /** 初始化 调用过的invoker 列表 */
         List<Invoker<T>> invoked = new ArrayList<Invoker<T>>(copyInvokers.size()); // invoked invokers.
         Set<String> providers = new HashSet<String>(len);
 
         // 循环调用，失败重试
         for (int i = 0; i < len; i++) {
+
+            // 非第一次调用
             //Reselect before retry to avoid a change of candidate `invokers`.
-            //NOTE: if `invokers` changed, then `invoked` also lose accuracy.
+            //NOTE: if `invokers` changed, then `invoked` also lose accuracy. -- 重要
             if (i > 0) {
                 checkWhetherDestroyed();
                 /** 在进行重试前重新列举 Invoker，这样做的好处是，如果某个服务挂了,通过调用 list 可得到最新可用的 Invoker 列表 */
@@ -85,8 +87,9 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 checkInvokers(copyInvokers, invocation);
             }
 
-            // 通过 LoadBalance 从 Invoker 列表中选择一个 Inovker
+            // 通过 LoadBalance 从 Invoker 列表中选择一个 Inovker -- 入参中有调用过的invoker列表
             Invoker<T> invoker = select(loadbalance, invocation, copyInvokers, invoked);
+            // 将选取的invoker 存放到 调用过的invoker列表中
             invoked.add(invoker);
 
             /** 设置 invoked 到 RPC 上下文中 */

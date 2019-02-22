@@ -19,6 +19,9 @@ package org.apache.dubbo.rpc;
 import java.util.Map;
 
 /**
+ *
+ * 消费者rpc调用服务提供者相关参数信息
+ *
  * Invocation. (API, Prototype, NonThreadSafe)
  *
  * @serial Don't change the class name and package name.
