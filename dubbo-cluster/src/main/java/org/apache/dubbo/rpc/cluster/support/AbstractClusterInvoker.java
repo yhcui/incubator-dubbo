@@ -101,6 +101,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
 
     /**
+     *
+     * 主要是对粘滞连接特性的支持上
+     *
      * Select a invoker using loadbalance policy.</br>
      * a) Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or,
      * if this invoker is unavailable, then continue step b (reselect), otherwise return the first selected invoker</br>
@@ -136,9 +139,12 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             stickyInvoker = null;
         }
 
-        // 在 sticky 为 true，且 stickyInvoker != null 的情况下。如果 selected 包含
-        // stickyInvoker，表明 stickyInvoker 对应的服务提供者可能因网络原因未能成功提供服务。
-        // 但是该提供者并没挂，此时 invokers 列表中仍存在该服务提供者对应的 Invoker。
+
+        /**
+         * 在 sticky 为 true，且 stickyInvoker != null 的情况下。
+         * 如果 selected 包含stickyInvoker，表明 stickyInvoker 对应的服务提供者可能因网络原因未能成功提供服务。
+         * 但是该提供者并没挂，此时 invokers 列表中仍存在该服务提供者对应的 Invoker，出现这种情况，需要对stickyInvoker进行可用性检查
+         * */
         //ignore concurrency problem
         if (sticky && stickyInvoker != null && (selected == null || !selected.contains(stickyInvoker))) {
             // availablecheck 表示是否开启了可用性检查，如果开启了，则调用 stickyInvoker 的
@@ -194,6 +200,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
                     // 如果 rinvoker 不为空，则将其赋值给 invoker
                     invoker = rinvoker;
                 } else {
+                    // 若 reselect 选出来的 Invoker 为空，此时定位 invoker 在 invokers 列表中的位置 index，然后获取 index + 1 处的 invoker
                     // rinvoker 为空，定位 invoker 在 invokers 中的位置
                     //Check the index of current selected invoker, if it's not the last one, choose the one at index+1.
                     int index = invokers.indexOf(invoker);
@@ -232,10 +239,12 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     private Invoker<T> reselect(LoadBalance loadbalance, Invocation invocation,
         List<Invoker<T>> invokers, List<Invoker<T>> selected, boolean availablecheck) throws RpcException {
 
+        // 重新进行select的列表。即从这个列表中再次获取相应的Invoker
         //Allocating one in advance, this list is certain to be used.
         List<Invoker<T>> reselectInvokers = new ArrayList<>(
             invokers.size() > 1 ? (invokers.size() - 1) : invokers.size());
 
+        // 填充reselectInvokers列表
         // First, try picking a invoker not in `selected`.
         for (Invoker<T> invoker : invokers) {
             // 如果 availablecheck 为true 则进行available验证
