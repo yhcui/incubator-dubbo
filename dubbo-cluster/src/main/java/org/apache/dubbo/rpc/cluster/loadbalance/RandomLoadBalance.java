@@ -99,7 +99,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             for (int i = 0; i < length; i++) {
                 offset -= weights[i];
                 if (offset < 0) {
-                    // 获取随生使用的invoker
+                    // 获取随生使用的invoker -- 负载完成
                     return invokers.get(i);
                 }
             }

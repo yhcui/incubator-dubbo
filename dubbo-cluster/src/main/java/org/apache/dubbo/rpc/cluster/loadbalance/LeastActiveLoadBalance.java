@@ -60,9 +60,10 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
      */
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        // Number of invokers
+        // Number of invokers. invoker的数量
         int length = invokers.size();
-        // The least active value of all invokers
+
+        // The least active value of all invokers。最小活跃数
         int leastActive = -1;
 
 
@@ -75,23 +76,32 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         // leastIndexs 用于记录具有相同“最小活跃数”的 Invoker 在 invokers 列表中的下标信息
         int[] leastIndexes = new int[length];
 
-        // the weight of every invokers
+        // the weight of every invokers -- invoker的权重数组
         int[] weights = new int[length];
-        // The sum of the warmup weights of all the least active invokes
+        // The sum of the warmup weights of all the least active invokes,权重中增加了warmup
         int totalWeight = 0;
+
+
         // The weight of the first least active invoke
+        // 第一个最小活跃数的 Invoker 权重值，用于与其他具有相同最小活跃数的 Invoker 的权重进行对比，
+        // 以检测是否“所有具有相同最小活跃数的 Invoker 的权重”均相等
         int firstWeight = 0;
-        // Every least active invoker has the same weight value?
+
+        // Every least active invoker has the same weight value? -- 每一个最小活跃invoker是否具有相同权重值
         boolean sameWeight = true;
 
-
-        // 遍历 invokers 列表，寻找活跃数最小的 Invoker - Filter out all the least active invokers
+        /**
+         * 遍历 invokers 列表，寻找活跃数最小的 Invoker,即循环取最小值算法
+         * */
+        // Filter out all the least active invokers
         for (int i = 0; i < length; i++) {
+
             Invoker<T> invoker = invokers.get(i);
             // 获取 Invoker 对应的活跃数 - Get the active number of the invoke
             int active = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName()).getActive();
+
             // Get the weight of the invoke configuration. The default value is 100.
-            // afterWarmup ，这样命名是为了强调该变量经过了 warmup 降权处理
+            // afterWarmup ，这样命名是为了强调该变量经过了 warmup 降权处理，仍然是权重
             int afterWarmup = getWeight(invoker, invocation);
             // save for later use
             weights[i] = afterWarmup;
@@ -140,7 +150,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             return invokers.get(leastIndexes[0]);
         }
 
-        // 有多个 Invoker 具有相同的最小活跃数，但它们之间的权重不同
+        // 有多个 Invoker 具有相同的最小活跃数，但它们之间的权重不同 -- 此处算法与权重随机算法相同
         if (!sameWeight && totalWeight > 0) {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on 
             // totalWeight.
