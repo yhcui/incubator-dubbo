@@ -371,6 +371,9 @@ public class Constants {
 
     public static final String TIMESTAMP_KEY = "timestamp";
 
+    /**
+     * 服务启动时间戳
+     * */
     public static final String REMOTE_TIMESTAMP_KEY = "remote.timestamp";
 
     /**
