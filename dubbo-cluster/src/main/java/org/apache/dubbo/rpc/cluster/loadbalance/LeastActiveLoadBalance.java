@@ -103,6 +103,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             // Get the weight of the invoke configuration. The default value is 100.
             // afterWarmup ，这样命名是为了强调该变量经过了 warmup 降权处理，仍然是权重
             int afterWarmup = getWeight(invoker, invocation);
+
             // save for later use
             weights[i] = afterWarmup;
             // 发现更小的活跃数，重新开始 - If it is the first invoker or the active number of the invoker is less than the current least active number
@@ -169,6 +170,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             }
         }
 
+        // TODO 此处老版本存在bug 需要多研究 http://dubbo.apache.org/zh-cn/docs/source_code_guide/loadbalance.html
         // If all invokers have the same weight value or totalWeight=0, return evenly.
         // 如果权重相同或权重为0时，随机返回一个 Invoker
         return invokers.get(leastIndexes[ThreadLocalRandom.current().nextInt(leastCount)]);
