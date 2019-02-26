@@ -35,7 +35,16 @@ import java.util.concurrent.ConcurrentMap;
  *
  * ConsistentHashLoadBalance 的负载均衡逻辑只受参数值影响，具有相同参数值的请求将会被分配给同一个服务提供者。
  * ConsistentHashLoadBalance 不关系权重
+ * 一致性hash算法原理:
+ * 算法提出之初是用于大规模缓存系统的负载均衡
+ * 首先根据 ip 或者其他的信息为缓存节点生成一个 hash，并将这个 hash 投射到 [0, 2的32次方 - 1] 的圆环上
+ * 当有查询或写入请求时，则为缓存项的 key 生成一个 hash 值。
+ * 然后查找第一个大于或等于该 hash 值的缓存节点，并到这个节点中查询或写入缓存项。
+ * 如果当前节点挂了，则在下一次查询或写入缓存时，为缓存项查找另一个大于其 hash 值的缓存节点即可
  *
+ * 优化：
+ * 引入虚拟节点，避免数据倾斜问题
+ * 数据倾斜问题: 所谓数据倾斜是指，由于节点不够分散，导致大量请求落到了同一个节点上，而其他节点只会接收到了少量请求的情况
  * ConsistentHashLoadBalance
  * http://dubbo.apache.org/zh-cn/docs/source_code_guide/loadbalance.html
  */
