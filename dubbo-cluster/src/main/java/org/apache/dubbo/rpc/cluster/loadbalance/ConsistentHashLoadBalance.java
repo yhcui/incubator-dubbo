@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentMap;
 public class ConsistentHashLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "consistenthash";
 
+    /**  */
     private final ConcurrentMap<String, ConsistentHashSelector<?>> selectors = new ConcurrentHashMap<String, ConsistentHashSelector<?>>();
 
     /**
@@ -87,7 +88,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
     private static final class ConsistentHashSelector<T> {
 
-        // 使用 TreeMap 存储 Invoker 虚拟节点
+        /** 使用 TreeMap 存储 Invoker 虚拟节点 */
         private final TreeMap<Long, Invoker<T>> virtualInvokers;
 
         private final int replicaNumber;
