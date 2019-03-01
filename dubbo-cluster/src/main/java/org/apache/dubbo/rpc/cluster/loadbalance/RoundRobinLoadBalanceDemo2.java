@@ -18,7 +18,18 @@ import java.util.concurrent.ConcurrentMap;
  * <BR>-----------------------------------------------
  * <BR>    修改日期         修改人          修改内容
  * </PRE>
+ * 最大公因数，也称最大公约数、最大公因子，指两个或多个整数共有约数中最大的一个。
+ * a，b的最大公约数记为（a，b），同样的，a，b，c的最大公约数记为（a，b，c），多个整数的最大公约数也有同样的记号。
+ * 求最大公约数有多种方法，常见的有质因数分解法、短除法、辗转相除法、更相减损法。
+ * 与最大公约数相对应的概念是最小公倍数，a，b的最小公倍数记为[a，b]
+ * 参考:
+ * https://blog.csdn.net/gqtcgq/article/details/52076997
+ * https://blog.csdn.net/zhangskd/article/details/50194069
  *
+ * 加权轮询: 后端序列是这样的：{ c, b, a, a, a, a, a }，会有5个连续的请求落在后端a上，分布不太均匀
+ *
+ * 平滑的加权轮询:它和前者的区别是,每7个请求对应的后端序列为 { a, a, b, a, c, a, a }，
+ * 转发给后端a的5个请求现在分散开来，不再是连续的。
  * @author cuiyh9
  * @version 1.0
  * @Date Created in 2019年03月01日 20:42
@@ -84,36 +95,36 @@ public class RoundRobinLoadBalanceDemo2 extends AbstractLoadBalance {
 
          下面举例说明，假设服务器 [A, B, C] 对应权重 [5, 2, 1]。
          第一次
-         indexSeq = 0, lenght = 3 , index = 0
+         indexSeq = 0, length = 3 , index = 0
          sequence = 0, maxWeight = 5, currentWeight = 0
          执行 index = 0
             sequence = 1, maxWeight = 5, currentWeight = 1
             getWeight =  5, currentWeight = 1, 反回A
 
          第二次
-            indexSeq = 1, lenght = 3 , index = 1
+            indexSeq = 1, length = 3 , index = 1
             sequence = 1, maxWeight = 5, currentWeight = 1
             getWeight =  2, currentWeight = 1, 反回B
 
          第三次
-             indexSeq = 2, lenght = 3 , index = 2
+             indexSeq = 2, length = 3 , index = 2
              sequence = 2, maxWeight = 5, currentWeight = 2
              getWeight =  1, currentWeight = 1, 不做处理
 
          第四次
-             indexSeq = 3, lenght = 3 , index = 0
+             indexSeq = 3, length = 3 , index = 0
              sequence = 3, maxWeight = 5, currentWeight = 3
              getWeight =  5, currentWeight = 3, 反回A
          第五次
-             indexSeq = 4, lenght = 3 , index = 1
+             indexSeq = 4, length = 3 , index = 1
              sequence = 4, maxWeight = 5, currentWeight = 4
              getWeight =  2, currentWeight = 4, 不做处理
          第六次
-             indexSeq = 5, lenght = 3 , index = 2
+             indexSeq = 5, length = 3 , index = 2
              sequence = 5, maxWeight = 5, currentWeight = 0
              getWeight =  1, currentWeight = 0, 不做处理
          第七次
-             indexSeq = 6, lenght = 3 , index = 0
+             indexSeq = 6, length = 3 , index = 0
              sequence = 6, maxWeight = 5, currentWeight = 1
              执行 index = 0
                  sequence = 6, maxWeight = 5, currentWeight = 1
@@ -125,12 +136,12 @@ public class RoundRobinLoadBalanceDemo2 extends AbstractLoadBalance {
             //获取权重大于0的集合
             length = invokerToWeightList.size();
             while (true) {
-                // 0 = 0 % 3; 1 = 1 % 3； 2 = 2 % 3；0 = 3 % 3; 1 = 4 % 3;
+                // 获取每次循环 拿到对比权重值的下标
                 int index = indexSeq.incrementAndGet() % length;
-                // 0 = 0 % 5; 1 = 1 % 5； 2 = 2 % 5；3 = 3 % 5; 4 = 4 % 5; 0 = 5 % 5
+                // 当前权重值
                 int currentWeight = sequence.get() % maxWeight;
 
-                // 每循环一轮（index = 0），重新计算 currentWeight
+                // index为0 计算当前调用的权重算法进行了变更
                 if (index == 0) {
                     // 1 = 1 % 5; 1 = 6 % 5;
                     currentWeight = sequence.incrementAndGet() % maxWeight;
