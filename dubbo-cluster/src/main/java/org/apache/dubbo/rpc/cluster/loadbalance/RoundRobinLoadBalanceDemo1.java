@@ -22,11 +22,8 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -88,7 +85,13 @@ public class RoundRobinLoadBalanceDemo1 extends AbstractLoadBalance {
         // 权重不相等 -- 如果最小权重小于最大权重，表明服务提供者之间的权重是不相等的
         // maxWeight == 0 代表minWeight也是0 -- 这个地方的 maxWeight > 0 需要判断?
         if (maxWeight > 0 && minWeight < maxWeight) {
-            // 使用调用编号对权重总和进行取余操作
+
+            /**
+             *
+             * 因为mod是全局取出来的,所以是可以实现
+             * 使用调用编号对权重总和进行取余操作
+             *
+             * */
             int mod = currentSequence % weightSum;
             /**
              假设我们有三台服务器 servers = [A, B, C]，对应的权重为 weights = [2, 5, 1]。
