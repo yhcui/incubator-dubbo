@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @param
  * @return
  * @deprecated
+ * @version dubbo 2.6.4
  */
 public class RoundRobinLoadBalanceDemo1 extends AbstractLoadBalance {
     public static final String NAME = "roundrobin";
@@ -115,6 +116,16 @@ public class RoundRobinLoadBalanceDemo1 extends AbstractLoadBalance {
                     // 获取权重包装类 IntegerWrapper
                     final IntegerWrapper v = each.getValue();
 
+                    /**
+                     * 在某些情况下存在着比较严重的性能问题
+                     * 问题出在了 Invoker 的返回时机上，
+                     * RoundRobinLoadBalance 需要在mod == 0 && v.getValue() > 0 条件成立的情况下才会被返回相应的 Invoker。
+                     * 假如 mod 很大，比如 10000，50000，甚至更大时，doSelect 方法需要进行很多次计算才能将 mod 减为0。
+                     * 由此可知，doSelect 的效率与 mod 有关，时间复杂度为 O(mod)。
+                     * mod 又受最大权重 maxWeight 的影响，因此当某个服务提供者配置了非常大的权重，
+                     * 此时 RoundRobinLoadBalance 会产生比较严重的性能问题
+                     * issues https://github.com/apache/incubator-dubbo/issues/2578
+                     * */
                     // 如果 mod = 0，且权重大于0，此时返回相应的 Invoker
                     if (mod == 0 && v.getValue() > 0) {
                         return k;
