@@ -81,6 +81,44 @@ public class RoundRobinLoadBalanceDemo2 extends AbstractLoadBalance {
          第五轮循环，currentWeight = 0，返回 A, B, C
          如上，这里的一轮循环是指 index 再次变为0所经历过的循环，这里可以把 index = 0 看做是一轮循环的开始。
          每一轮循环的次数与 Invoker 的数量有关，Invoker 数量通常不会太多，所以我们可以认为上面代码的时间复杂度为常数级。
+
+         下面举例说明，假设服务器 [A, B, C] 对应权重 [5, 2, 1]。
+         第一次
+         indexSeq = 0, lenght = 3 , index = 0
+         sequence = 0, maxWeight = 5, currentWeight = 0
+         执行 index = 0
+            sequence = 1, maxWeight = 5, currentWeight = 1
+            getWeight =  5, currentWeight = 1, 反回A
+
+         第二次
+            indexSeq = 1, lenght = 3 , index = 1
+            sequence = 1, maxWeight = 5, currentWeight = 1
+            getWeight =  2, currentWeight = 1, 反回B
+
+         第三次
+             indexSeq = 2, lenght = 3 , index = 2
+             sequence = 2, maxWeight = 5, currentWeight = 2
+             getWeight =  1, currentWeight = 1, 不做处理
+
+         第四次
+             indexSeq = 3, lenght = 3 , index = 0
+             sequence = 3, maxWeight = 5, currentWeight = 3
+             getWeight =  5, currentWeight = 3, 反回A
+         第五次
+             indexSeq = 4, lenght = 3 , index = 1
+             sequence = 4, maxWeight = 5, currentWeight = 4
+             getWeight =  2, currentWeight = 4, 不做处理
+         第六次
+             indexSeq = 5, lenght = 3 , index = 2
+             sequence = 5, maxWeight = 5, currentWeight = 0
+             getWeight =  1, currentWeight = 0, 不做处理
+         第七次
+             indexSeq = 6, lenght = 3 , index = 0
+             sequence = 6, maxWeight = 5, currentWeight = 1
+             执行 index = 0
+                 sequence = 6, maxWeight = 5, currentWeight = 1
+                 getWeight =  5, currentWeight = 1, 反回A
+             ....
          */
         if (maxWeight > 0 && minWeight < maxWeight) {
 
