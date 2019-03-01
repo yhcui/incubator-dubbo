@@ -11,13 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * <p>TODO</p>
- * <p>
- * <PRE>
- * <BR>    修改记录
- * <BR>-----------------------------------------------
- * <BR>    修改日期         修改人          修改内容
- * </PRE>
+ * 有两种算法来实现这个加权轮询，一种是最大公约数的，一种是Nginx的加权轮询算法。
  * 最大公因数，也称最大公约数、最大公因子，指两个或多个整数共有约数中最大的一个。
  * a，b的最大公约数记为（a，b），同样的，a，b，c的最大公约数记为（a，b，c），多个整数的最大公约数也有同样的记号。
  * 求最大公约数有多种方法，常见的有质因数分解法、短除法、辗转相除法、更相减损法。
@@ -25,6 +19,9 @@ import java.util.concurrent.ConcurrentMap;
  * 参考:
  * https://blog.csdn.net/gqtcgq/article/details/52076997
  * https://blog.csdn.net/zhangskd/article/details/50194069
+ * http://www.cnblogs.com/markcd/p/8456870.html
+ * https://blog.csdn.net/bohu83/article/details/79669051
+ * https://www.codercto.com/a/43071.html
  *
  * 加权轮询: 后端序列是这样的：{ c, b, a, a, a, a, a }，会有5个连续的请求落在后端a上，分布不太均匀
  *
