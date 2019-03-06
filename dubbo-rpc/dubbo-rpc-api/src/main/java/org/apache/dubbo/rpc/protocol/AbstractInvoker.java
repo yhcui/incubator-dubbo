@@ -124,6 +124,15 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         return getInterface() + " -> " + (getUrl() == null ? "" : getUrl().toString());
     }
 
+    /**
+     *
+     * 添加信息到 RpcInvocation#attachment 变量中
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     @Override
     public Result invoke(Invocation inv) throws RpcException {
         // if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed

@@ -190,6 +190,14 @@ public class RpcUtils {
         return CompletableFuture.class.isAssignableFrom(method.getReturnType());
     }
 
+    /**
+     * 是否有返回值。attachment中是否包含了return
+     *
+     * @author cuiyuhui
+     * @created
+     * @param
+     * @return
+     */
     public static boolean isOneway(URL url, Invocation inv) {
         boolean isOneway;
         if (Boolean.FALSE.toString().equals(inv.getAttachment(Constants.RETURN_KEY))) {
