@@ -30,7 +30,10 @@ import java.lang.reflect.Method;
  * InvokerHandler
  */
 public class InvokerInvocationHandler implements InvocationHandler {
+
     private static final Logger logger = LoggerFactory.getLogger(InvokerInvocationHandler.class);
+
+    /** 成员变量类型为MockClusterInvoker */
     private final Invoker<?> invoker;
 
     public InvokerInvocationHandler(Invoker<?> handler) {

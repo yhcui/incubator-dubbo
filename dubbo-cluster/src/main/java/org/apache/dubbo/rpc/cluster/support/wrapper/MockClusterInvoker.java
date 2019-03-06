@@ -32,6 +32,13 @@ import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.util.List;
 
+/**
+ * Mock -- 服务降级
+ * @author cuiyuhui
+ * @created
+ * @param
+ * @return
+ */
 public class MockClusterInvoker<T> implements Invoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(MockClusterInvoker.class);
@@ -68,6 +75,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         Result result = null;
+
 
         // 获取 mock 配置值
         String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), Constants.MOCK_KEY, Boolean.FALSE.toString()).trim();
