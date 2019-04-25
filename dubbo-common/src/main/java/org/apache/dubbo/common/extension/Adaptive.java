@@ -28,6 +28,7 @@ import java.lang.annotation.Target;
  * Provide helpful information for {@link ExtensionLoader} to inject dependency extension instance.
  * ElementType.TYPE : 代表该注解可以用到类或接口上
  * ElementType.METHOD : 代表该注解可以用到方法上
+ *
  * 该注解作用：加了该注解，代表不使用Compiler编译生成
  * 当 Adaptive 注解在类上时，Dubbo 不会为该类生成代理类。
  * 注解在方法（接口方法）上时，Dubbo 则会为该方法生成代理逻辑。
@@ -36,6 +37,13 @@ import java.lang.annotation.Target;
  *
  * 更多时候，Adaptive 是注解在接口方法上的，表示拓展的加载逻辑需由框架自动生成。Adaptive 注解的地方不同，相应的处理逻辑也是不同的
  * 注解在类上时，处理逻辑比较简单,注解在接口方法上时，处理逻辑较为复杂
+ *
+ * 1. 在类上加上@Adaptive注解的类，是最为明确的创建对应类型Adaptive类。所以他优先级最高。
+ * 2. @SPI注解中的value是默认值，如果通过URL获取不到关于取哪个类作为Adaptive类的话，就使用这个默认值，当然如果URL中可以获取到，就用URL中的。
+ * 3. 可以再方法上增加@Adaptive注解，注解中的value与链接中的参数的key一致，链接中的key对应的value就是spi中的name,获取相应的实现类。
+ *
+ * https://www.jianshu.com/p/dc616814ce98
+ *
  * @see ExtensionLoader
  * @see URL
  */

@@ -43,7 +43,7 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     private final Client client;
     private final ExchangeChannel channel;
-    // heartbeat(ms), default value is 0 , won't execute a heartbeat.
+    /** heartbeat(ms), default value is 0 , won't execute a heartbeat. */
     private int heartbeat;
     private int heartbeatTimeout;
 
@@ -57,9 +57,9 @@ public class HeaderExchangeClient implements ExchangeClient {
 
         // 创建 HeaderExchangeChannel 对象
         this.channel = new HeaderExchangeChannel(client);
-        String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
 
         // 以下代码均与心跳检测逻辑有关
+        String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
         this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null &&
                 dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
         this.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);

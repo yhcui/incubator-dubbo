@@ -109,7 +109,6 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         }
 
         // 创建 Request 对象
-        // create request.
         Request req = new Request();
         req.setVersion(Version.getProtocolVersion());
 

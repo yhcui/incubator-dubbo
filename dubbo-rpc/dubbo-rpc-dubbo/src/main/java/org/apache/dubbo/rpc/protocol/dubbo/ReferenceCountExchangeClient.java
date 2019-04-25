@@ -51,6 +51,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     public ReferenceCountExchangeClient(ExchangeClient client, ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap) {
         this.client = client;
+        // 引用计数自增
         referenceCount.incrementAndGet();
         this.url = client.getUrl();
         if (ghostClientMap == null) {

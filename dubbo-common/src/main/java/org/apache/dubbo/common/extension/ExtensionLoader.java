@@ -118,6 +118,10 @@ public class ExtensionLoader<T> {
     private ExtensionLoader(Class<?> type) {
         this.type = type;
         // 这个地方会是一个死循环，但因为Adaptive注解的存在，避免了死循环
+        /**
+         * AdaptiveExtensionFactory 里面的 factories 包括了 SpiExtensionFactory 和 SpringExtensionFactory
+         *
+         * */
         objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
 
@@ -135,7 +139,7 @@ public class ExtensionLoader<T> {
     /**
      * 根据类名获取 对应的ExtensionLoader的一个实例
      * 低层存储结构使用ConcurrentHashMap, key为Class,Value为new ExtensionLoader
-     *
+     * 其实也是一种工厂机制，只不过底层是用SPI实现的
      * @author cuiyuhui
      * @created
      * @param
@@ -360,7 +364,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 获取指定名字的扩展，先从缓存中获取，缓存不存在，则创建
+     * 获取指定名字的实际扩展，先从缓存中获取，缓存不存在，则创建
      * 如果名称为空不存抛出异常
      * 如果根据名称找不到类，抛出异常
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
@@ -428,7 +432,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 获取默认扩展点名称
+     * 获取默认扩展点的名称
      *
      * Return default extension name, return <code>null</code> if not configured.
      *
@@ -534,7 +538,8 @@ public class ExtensionLoader<T> {
     public T getAdaptiveExtension() {
         // 从缓存中获取自适应拓展
         Object instance = cachedAdaptiveInstance.get();
-        if (instance == null) { // 缓存未命中
+        // 缓存未命中
+        if (instance == null) {
             if (createAdaptiveInstanceError == null) {
                 synchronized (cachedAdaptiveInstance) {
                     instance = cachedAdaptiveInstance.get();
@@ -719,6 +724,8 @@ public class ExtensionLoader<T> {
     }
 
     /**
+     *
+     * 只会触发一次,同时设计默认的cachedDefaultName
      * 加载接口类型为type的所有的ExtensionClass类,即加载type接口中包括@SPI注解接口的子类
      * 即加载所有 META-INF/dubbo/ 和META-INF/service/下配置文件的类
      * @author cuiyuhui
@@ -728,7 +735,13 @@ public class ExtensionLoader<T> {
      */
     // synchronized in getExtensionClasses
     private Map<String, Class<?>> loadExtensionClasses() {
+
+        /**
+         * 获取到类型的SPI注解，所以利用SPI扩展点的地方，需要加入SPI注解
+         * */
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
+
+        // 设置默认扩展点名称
         if (defaultAnnotation != null) {
             String value = defaultAnnotation.value();
             if ((value = value.trim()).length() > 0) {
@@ -932,7 +945,7 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("unchecked")
     private T createAdaptiveExtension() {
         try {
-            // newInstance 时执行
+            // injectExtension是dubbo的DI，依赖注入。如果适配器类有属性的set方法，会自动注入
             return injectExtension((T) getAdaptiveExtensionClass().newInstance());
         } catch (Exception e) {
             throw new IllegalStateException("Can not create adaptive extension " + type + ", cause: " + e.getMessage(), e);
@@ -942,34 +955,44 @@ public class ExtensionLoader<T> {
     private Class<?> getAdaptiveExtensionClass() {
         // 通过 SPI 获取所有的拓展类
         getExtensionClasses();
+
+        /**
+         * 如果通过上面的步骤可以获取到cachedAdaptiveClass直接返回，如果不行的话，就得考虑自己进行利用动态代理创建一个了
+         */
         if (cachedAdaptiveClass != null) {
             return cachedAdaptiveClass;
         }
-        // 创建自适应拓展类
+        // 利用动态代理创建自适应拓展类
         return cachedAdaptiveClass = createAdaptiveExtensionClass();
     }
 
     /**
      * 创建AdaptiveExtension的class内容，并进行编译加载
+     *
      * @author cuiyuhui
      * @created
      * @param
      * @return
      */
     private Class<?> createAdaptiveExtensionClass() {
-        // 构建自适应拓展代码
+        // 构建自适应拓展代码 - 根据注解@Adaptive的key值注入对应实现类
         String code = createAdaptiveExtensionClassCode();
         ClassLoader classLoader = findClassLoader();
 
         // 获取编译器实现类 -- Dubbo 默认使用 javassist 作为编译器
-        org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
+        org.apache.dubbo.common.compiler.Compiler compiler
+                = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
 
         // 编译代码，生成 Class
         return compiler.compile(code, classLoader);
     }
 
     /**
-     * 创建自适应扩展点代码
+     * 创建自适应扩展点代码.
+     * 根据注解@Adaptive的key值注入对应实现类.
+     * Adaptive实例的代码是由createAdaptiveExtensionClassCode()方法动态产生的
+     * ”直到扩展点方法执行时才决定调用是哪一个扩展点实现”, 这句话理解为Adaptive代码中会根据extName扩展名指定加载对应实现类
+     *
      * @author cuiyuhui
      * @created
      * @param
